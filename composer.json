@@ -1,0 +1,34 @@
+{
+    "name": "dhii/structs",
+    "description": "Immutable, data-only classes",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Dhii Team",
+            "email": "development@dhii.co"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": "^7.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^6.0 || ^7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Dhii\\Structs\\": ["src/"]
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Dhii\\Structs\\UnitTest\\": ["test/unit"],
+            "Dhii\\Structs\\FuncTest\\": ["test/func"]
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
+    }
+}
