@@ -6,6 +6,7 @@ use Dhii\Structs\PropType;
 use Dhii\Structs\PropTypes\ArrayPropType;
 use Dhii\Structs\PropTypes\BoolPropType;
 use Dhii\Structs\PropTypes\CallablePropType;
+use Dhii\Structs\PropTypes\EnumPropType;
 use Dhii\Structs\PropTypes\FloatPropType;
 use Dhii\Structs\PropTypes\IntersectionPropType;
 use Dhii\Structs\PropTypes\IntPropType;
@@ -77,6 +78,14 @@ class TyFuncTest extends TestCase
     public function testObject()
     {
         static::assertInstanceOf(ObjectPropType::class, Ty::object());
+    }
+
+    /**
+     * @since [*next-version*]
+     */
+    public function testEnum()
+    {
+        static::assertInstanceOf(EnumPropType::class, Ty::enum(['a', 'b', 'c']));
     }
 
     /**

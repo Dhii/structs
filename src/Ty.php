@@ -5,6 +5,7 @@ namespace Dhii\Structs;
 use Dhii\Structs\PropTypes\ArrayPropType;
 use Dhii\Structs\PropTypes\BoolPropType;
 use Dhii\Structs\PropTypes\CallablePropType;
+use Dhii\Structs\PropTypes\EnumPropType;
 use Dhii\Structs\PropTypes\FloatPropType;
 use Dhii\Structs\PropTypes\IntersectionPropType;
 use Dhii\Structs\PropTypes\IntPropType;
@@ -128,6 +129,20 @@ class Ty
     public static function object(string $what = null) : ObjectPropType
     {
         return new ObjectPropType($what);
+    }
+
+    /**
+     * Enum property type.
+     *
+     * @since [*next-version*]
+     *
+     * @param array $values The enum values. Should not be empty.
+     *
+     * @return EnumPropType
+     */
+    public static function enum(array $values)
+    {
+        return new EnumPropType($values);
     }
 
     /**
