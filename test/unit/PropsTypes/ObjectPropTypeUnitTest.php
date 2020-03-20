@@ -4,6 +4,7 @@ namespace Dhii\Structs\Tests\Unit\PropsTypes;
 
 use DateTime;
 use Dhii\Structs\PropTypes\ObjectPropType;
+use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use TypeError;
@@ -32,6 +33,16 @@ class ObjectPropTypeUnitTest extends TestCase
         $subject = new ObjectPropType($className);
 
         static::assertEquals($className, $subject->getName());
+    }
+
+    /**
+     * @since [*next-version*]
+     */
+    public function testGetNameWithInvalidClassName()
+    {
+        $this->expectException(LogicException::class);
+
+        new ObjectPropType('Class_DoesNotExist');
     }
 
     /**
