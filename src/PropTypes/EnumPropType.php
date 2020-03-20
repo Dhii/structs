@@ -28,7 +28,7 @@ class EnumPropType implements PropType
      *
      * @since [*next-version*]
      *
-     * @param array $values
+     * @param array $values The enum values. Should not be empty.
      */
     public function __construct(array $values)
     {
