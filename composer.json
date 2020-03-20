@@ -19,14 +19,14 @@
     },
     "autoload": {
         "psr-4": {
-            "Dhii\\Structs\\": ["src/"]
+            "Dhii\\Structs\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Dhii\\Structs\\Tests\\Unit\\": ["test/unit"],
-            "Dhii\\Structs\\Tests\\Func\\": ["test/func"],
-            "Dhii\\Structs\\Tests\\Stubs\\": ["test/stubs"]
+            "Dhii\\Structs\\Tests\\Unit\\": "test/unit",
+            "Dhii\\Structs\\Tests\\Func\\": "test/func",
+            "Dhii\\Structs\\Tests\\Stubs\\": "test/stubs"
         }
     },
     "scripts": {
