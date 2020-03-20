@@ -24,8 +24,9 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Dhii\\Structs\\UnitTest\\": ["test/unit"],
-            "Dhii\\Structs\\FuncTest\\": ["test/func"]
+            "Dhii\\Structs\\Tests\\Unit\\": ["test/unit"],
+            "Dhii\\Structs\\Tests\\Func\\": ["test/func"],
+            "Dhii\\Structs\\Tests\\Stubs\\": ["test/stubs"]
         }
     },
     "scripts": {
