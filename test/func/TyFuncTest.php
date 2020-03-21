@@ -110,6 +110,24 @@ class TyFuncTest extends TestCase
     /**
      * @since [*next-version*]
      */
+    public function testObjectWithParent()
+    {
+        static::assertInstanceOf(ObjectPropType::class, Ty::object(ArrayAccess::class));
+    }
+
+    /**
+     * @since [*next-version*]
+     */
+    public function testObjectMultipleParents()
+    {
+        $subject = Ty::object(ArrayAccess::class, Countable::class, Traversable::class);
+
+        static::assertInstanceOf(IntersectionPropType::class, $subject);
+    }
+
+    /**
+     * @since [*next-version*]
+     */
     public function testEnum()
     {
         static::assertInstanceOf(EnumPropType::class, Ty::enum(['a', 'b', 'c']));

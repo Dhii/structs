@@ -154,13 +154,23 @@ class Ty
      *
      * @since [*next-version*]
      *
-     * @param string|null $what The name of the class to extend or interface to implement.
+     * @param string ...$what Optional list of classes or interfaces that objects must extend or implement.
      *
-     * @return ObjectPropType
+     * @return PropType
      */
-    public static function object(string $what = null) : ObjectPropType
+    public static function object(string ...$what) : PropType
     {
-        return new ObjectPropType($what);
+        if (count($what) > 1) {
+            $parents = array_map([Ty::class, 'object'], $what);
+
+            return new IntersectionPropType($parents);
+        }
+
+        $parent = !empty($what)
+            ? reset($what)
+            : null;
+
+        return new ObjectPropType($parent);
     }
 
     /**
