@@ -111,6 +111,23 @@ $flipped = $image->with([
 ]);
 ```
 
+When extending a struct, you may override the `getPropTypes()` method to add new properties.
+
+```php
+class NamedImage extends Image
+{
+    public function getPropTypes() : array {
+        $propTypes = parent::getPropTypes();
+        $propTypes['name'] = Ty::string();
+
+        return $propTypes;
+    }
+}
+```
+
+**Some advice**: Take care if altering the parent struct's existing prop types to make sure that new types are
+covariant. And remember, removing or renaming props breaks [LSP][lsp].
+
 ## Property Types
 
 | Type | Values |
@@ -190,3 +207,4 @@ Maybe you'll agree with us ☺
 [array-access]: https://www.php.net/manual/en/class.arrayaccess
 
 [Dhii]: https://github.com/Dhii/dhii
+[lsp]: https://en.wikipedia.org/wiki/Liskov_substitution_principle
