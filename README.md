@@ -146,6 +146,7 @@ covariant. And remember, removing or renaming props breaks [LSP][lsp].
 | `Ty::union(...)` | Values that match **at least one** type in a given set |
 | `Ty::intersect(...)` | Values that match **all** of the types in a given set |
 | `Ty::nullable(?)` | Values that match a given type, or `null` |
+| `Ty::custom(?)` | Define a custom prop type |
 
 Examples:
 
@@ -157,10 +158,24 @@ class MyStruct extends Struct
 {
     public function getPropTypes() : array {
         return [
+            // Nullable object type
             'owner' => Ty::nullable(Ty::object(DateTime::class)),
+            // Enum type (of strings)
             'day' => Ty::enum('sun', 'mon', 'tues', 'wed', 'thurs', 'fri', 'sat'),
-            'config' => Ty::union([Ty::array(), Ty::object()]),
+            // Either an array or an object
+            'config' => Ty::union(Ty::array(), Ty::object()),
+            // An object that implements Traversable AND Serializable
             'list' => Ty::object(Traversable::class, Serializable::class),
+            // A custom type
+            'total' => Ty::custom(function ($value) {
+                if (is_int($value)) {
+                    return $value;
+                }
+                if (is_array($value)) {
+                    return array_sum($value);
+                }
+                throw new TypeError('Property value must be int or array');
+            })
         ];
     }
 }
