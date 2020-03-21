@@ -2,6 +2,8 @@
 
 namespace Dhii\Structs\Tests\Func\PropTypes;
 
+use ArrayIterator;
+use ArrayObject;
 use Dhii\Structs\PropTypes\CallablePropType;
 use PHPUnit\Framework\TestCase;
 use stdClass;
@@ -30,6 +32,8 @@ class CallablePropTypeFuncTest extends TestCase
         static::assertFalse($subject->isValid(['test', 'foo', 'bar', 'baz']));
         static::assertFalse($subject->isValid(['test' => 'foo', 'bar' => 'baz']));
         static::assertFalse($subject->isValid(new stdClass()));
+        static::assertFalse($subject->isValid(new ArrayObject()));
+        static::assertFalse($subject->isValid(new ArrayIterator()));
         static::assertTrue($subject->isValid('substr'));
         static::assertTrue($subject->isValid('DateTime::createFromFormat'));
         static::assertTrue($subject->isValid([$this, 'testValid']));

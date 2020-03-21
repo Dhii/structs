@@ -2,6 +2,8 @@
 
 namespace Dhii\Structs\Tests\Func\PropTypes;
 
+use ArrayIterator;
+use ArrayObject;
 use Dhii\Structs\PropTypes\ArrayPropType;
 use PHPUnit\Framework\TestCase;
 use stdClass;
@@ -30,6 +32,8 @@ class ArrayPropTypeFuncTest extends TestCase
         static::assertTrue($subject->isValid(['test', 'foo', 'bar', 'baz']));
         static::assertTrue($subject->isValid(['test' => 'foo', 'bar' => 'baz']));
         static::assertFalse($subject->isValid(new stdClass()));
+        static::assertFalse($subject->isValid(new ArrayObject()));
+        static::assertFalse($subject->isValid(new ArrayIterator()));
         static::assertFalse($subject->isValid('substr'));
         static::assertFalse($subject->isValid('DateTime::createFromFormat'));
         static::assertTrue($subject->isValid([$this, 'testGetName']));

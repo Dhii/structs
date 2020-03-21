@@ -5,9 +5,11 @@ namespace Dhii\Structs\Tests\Func\PropTypes;
 use ArrayAccess;
 use ArrayIterator;
 use ArrayObject;
+use CachingIterator;
 use Countable;
 use Dhii\Structs\PropTypes\IntersectionPropType;
 use Dhii\Structs\PropTypes\ObjectPropType;
+use LimitIterator;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use Traversable;
@@ -26,6 +28,7 @@ class IntersectionPropTypeFuncTest extends TestCase
         ]);
 
         static::assertTrue($subject->isValid(new ArrayObject()));
+        static::assertTrue($subject->isValid(new ArrayIterator()));
     }
 
     /**
@@ -39,7 +42,8 @@ class IntersectionPropTypeFuncTest extends TestCase
             new ObjectPropType(Traversable::class),
         ]);
 
-        static::assertTrue($subject->isValid(new ArrayIterator()));
+        // Iterable, but not countable or array access
+        static::assertFalse($subject->isValid(new LimitIterator(new ArrayIterator())));
     }
 
     /**
