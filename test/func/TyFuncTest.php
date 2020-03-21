@@ -10,6 +10,7 @@ use Dhii\Structs\PropTypes\EnumPropType;
 use Dhii\Structs\PropTypes\FloatPropType;
 use Dhii\Structs\PropTypes\IntersectionPropType;
 use Dhii\Structs\PropTypes\IntPropType;
+use Dhii\Structs\PropTypes\IterablePropType;
 use Dhii\Structs\PropTypes\NullablePropType;
 use Dhii\Structs\PropTypes\ObjectPropType;
 use Dhii\Structs\PropTypes\StringPropType;
@@ -70,6 +71,14 @@ class TyFuncTest extends TestCase
     public function testArray()
     {
         static::assertInstanceOf(ArrayPropType::class, Ty::array());
+    }
+
+    /**
+     * @since [*next-version*]
+     */
+    public function testIterable()
+    {
+        static::assertInstanceOf(IterablePropType::class, Ty::iterable());
     }
 
     /**
