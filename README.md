@@ -160,12 +160,16 @@ class MyStruct extends Struct
         return [
             // Nullable object type
             'owner' => Ty::nullable(Ty::object(DateTime::class)),
+
             // Enum type (of strings)
             'day' => Ty::enum('sun', 'mon', 'tues', 'wed', 'thurs', 'fri', 'sat'),
+
             // Either an array or an object
             'config' => Ty::union(Ty::array(), Ty::object()),
+
             // An object that implements Traversable AND Serializable
             'list' => Ty::object(Traversable::class, Serializable::class),
+
             // A custom type
             'total' => Ty::custom(function ($value) {
                 if (is_int($value)) {
