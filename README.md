@@ -6,7 +6,7 @@
 [![Latest Stable Version](https://poser.pugx.org/dhii/structs/version)](https://packagist.org/packages/dhii/structs)
 [![This package complies with Dhii standards](https://img.shields.io/badge/Dhii-Compliant-green.svg?style=flat-square)][Dhii]
 
-Immutable, data-only classes
+Create immutable, type-safe, data-only classes
 
 ## Introduction
 

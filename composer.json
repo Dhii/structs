@@ -1,6 +1,6 @@
 {
     "name": "dhii/structs",
-    "description": "Immutable, data-only classes",
+    "description": "Create immutable, type-safe, data-only classes",
     "type": "library",
     "license": "MIT",
     "authors": [
