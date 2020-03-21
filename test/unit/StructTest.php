@@ -31,9 +31,7 @@ class StructTest extends TestCase
                      ->setMethods(['getPropTypes'])
                      ->getMockForAbstractClass();
 
-        $mock->method('getPropTypes')->willReturnCallback(function () use ($propTypes) {
-            return $propTypes;
-        });
+        $mock->method('getPropTypes')->willReturn($propTypes);
 
         $mock->__construct($data);
 
