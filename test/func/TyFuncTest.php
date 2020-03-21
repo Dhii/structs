@@ -130,7 +130,7 @@ class TyFuncTest extends TestCase
      */
     public function testEnum()
     {
-        static::assertInstanceOf(EnumPropType::class, Ty::enum(['a', 'b', 'c']));
+        static::assertInstanceOf(EnumPropType::class, Ty::enum('a', 'b', 'c'));
     }
 
     /**

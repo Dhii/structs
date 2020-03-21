@@ -178,11 +178,11 @@ class Ty
      *
      * @since [*next-version*]
      *
-     * @param array $values The enum values. Should not be empty.
+     * @param string ...$values The enum values. Should not be empty.
      *
      * @return EnumPropType
      */
-    public static function enum(array $values)
+    public static function enum(...$values)
     {
         return new EnumPropType($values);
     }
