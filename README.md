@@ -113,21 +113,22 @@ $flipped = $image->with([
 
 ## Property Types
 
-| Class | Shorthand | Value types |
-|-------|--------|------|
-| `MixedPropType` | `Ty::mixed()` | Any value |
-| `BoolPropType` | `Ty::bool()` | Booleans and [boolean-castable][bools] values |
-| `IntPropType` | `Ty::int()` | Integers and [integer-castable][ints] values |
-| `FloatPropType` | `Ty::float()` | Floats and [float-castable][floats] values |
-| `StringPropType` | `Ty::string()` | Strings, [string-castable][strings] values and objects that implement [`__toString()`][stringables] |
-| `ArrayPropType` | `Ty::array()` | Array values |
-| `IterablePropType` | `Ty::iterable()` | [Iterable values][iterables] |
-| `ObjectPropType` | `Ty::object(?)` | Object values, with an optional `instanceof` restriction |
-| `CallablePropType` | `Ty::callable()` | [Callable values][callables] |
-| `EnumPropType` | `Ty::enum([...])` | Values that exist within a pre-defined set |
-| `UnionPropType` | `Ty::union([...])` | Values that match **at least one** type in a given set |
-| `IntersectionPropType` | `Ty::intersect([...])` | Values that match **all** of the types in a given set |
-| `NullablePropType` | `Ty::nullable(?)` | Values that match a given type, or `null` |
+| Type | Values |
+|--------|------|
+| `Ty::mixed()` | Any value |
+| `Ty::bool()` | Booleans and [boolean-castable][bools] values |
+| `Ty::int()` | Integers and [integer-castable][ints] values |
+| `Ty::float()` | Floats and [float-castable][floats] values |
+| `Ty::string()` | Strings, [string-castable][strings] values and objects that implement [`__toString()`][stringables] |
+| `Ty::array()` | Array values |
+| `Ty::arrayLike()` | Array values and [`ArrayAccess`][array-access] objects |
+| `Ty::iterable()` | [Iterable values][iterables] |
+| `Ty::object(...)` | Object values, with an optional parent class restrictions |
+| `Ty::callable()` | [Callable values][callables] |
+| `Ty::enum(...)` | Values that exist within a pre-defined set |
+| `Ty::union(...)` | Values that match **at least one** type in a given set |
+| `Ty::intersect(...)` | Values that match **all** of the types in a given set |
+| `Ty::nullable(?)` | Values that match a given type, or `null` |
 
 Examples:
 
@@ -139,10 +140,10 @@ class MyStruct extends Struct
 {
     public function getPropTypes() : array {
         return [
-            'owner' => Ty::nullable(Ty::object(UserInterface::class)),
+            'owner' => Ty::nullable(Ty::object(DateTime::class)),
             'day' => Ty::enum('sun', 'mon', 'tues', 'wed', 'thurs', 'fri', 'sat'),
             'config' => Ty::union([Ty::array(), Ty::object()]),
-            'list' => Ty::intersect([Ty::object(Traversable::class), Ty::object(Countable::class)]),
+            'list' => Ty::object(Traversable::class, Serializable::class),
         ];
     }
 }
@@ -155,5 +156,6 @@ class MyStruct extends Struct
 [stringables]: https://www.php.net/manual/en/language.oop5.magic.php#object.tostring
 [callables]: https://www.php.net/manual/en/function.is-callable.php
 [iterables]: https://www.php.net/manual/en/language.types.iterable.php
+[array-access]: https://www.php.net/manual/en/class.arrayaccess
 
 [Dhii]: https://github.com/Dhii/dhii
