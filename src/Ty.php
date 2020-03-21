@@ -9,6 +9,7 @@ use Dhii\Structs\PropTypes\EnumPropType;
 use Dhii\Structs\PropTypes\FloatPropType;
 use Dhii\Structs\PropTypes\IntersectionPropType;
 use Dhii\Structs\PropTypes\IntPropType;
+use Dhii\Structs\PropTypes\IterablePropType;
 use Dhii\Structs\PropTypes\NullablePropType;
 use Dhii\Structs\PropTypes\ObjectPropType;
 use Dhii\Structs\PropTypes\StringPropType;
@@ -113,6 +114,21 @@ class Ty
     {
         static $ty = null;
         is_null($ty) && $ty = new ArrayPropType();
+
+        return $ty;
+    }
+
+    /**
+     * Iterable property type.
+     *
+     * @since [*next-version*]
+     *
+     * @return IterablePropType
+     */
+    public static function iterable() : IterablePropType
+    {
+        static $ty = null;
+        is_null($ty) && $ty = new IterablePropType();
 
         return $ty;
     }
