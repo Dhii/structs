@@ -116,14 +116,14 @@ $flipped = $image->with([
 | Class | Shorthand | Value types |
 |-------|--------|------|
 | `MixedPropType` | `Ty::mixed()` | Any value |
-| `BoolPropType` | `Ty::bool()` | Booleans and [boolean-castable][1] values |
-| `IntPropType` | `Ty::int()` | Integers and [integer-castable][2] values |
-| `FloatPropType` | `Ty::float()` | Floats and [float-castable][3] values |
-| `StringPropType` | `Ty::string()` | Strings, [string-castable][4] values and objects that implement [`__toString()`][5] |
+| `BoolPropType` | `Ty::bool()` | Booleans and [boolean-castable][bools] values |
+| `IntPropType` | `Ty::int()` | Integers and [integer-castable][ints] values |
+| `FloatPropType` | `Ty::float()` | Floats and [float-castable][floats] values |
+| `StringPropType` | `Ty::string()` | Strings, [string-castable][strings] values and objects that implement [`__toString()`][stringables] |
 | `ArrayPropType` | `Ty::array()` | Array values |
-| `IterablePropType` | `Ty::iterable()` | [Iterable values][7] |
+| `IterablePropType` | `Ty::iterable()` | [Iterable values][iterables] |
 | `ObjectPropType` | `Ty::object(?)` | Object values, with an optional `instanceof` restriction |
-| `CallablePropType` | `Ty::callable()` | [Callable values][6] |
+| `CallablePropType` | `Ty::callable()` | [Callable values][callables] |
 | `EnumPropType` | `Ty::enum([...])` | Values that exist within a pre-defined set |
 | `UnionPropType` | `Ty::union([...])` | Values that match **at least one** type in a given set |
 | `IntersectionPropType` | `Ty::intersect([...])` | Values that match **all** of the types in a given set |
@@ -148,12 +148,12 @@ class MyStruct extends Struct
 }
 ```
 
-[1]: https://www.php.net/manual/en/language.types.boolean.php#language.types.boolean.casting
-[2]: https://www.php.net/manual/en/language.types.integer.php#language.types.integer.casting
-[3]: https://www.php.net/manual/en/language.types.float.php#language.types.float.casting
-[4]: https://www.php.net/manual/en/language.types.string.php#language.types.string.casting
-[5]: https://www.php.net/manual/en/language.oop5.magic.php#object.tostring
-[6]: https://www.php.net/manual/en/function.is-callable.php
-[7]: https://www.php.net/manual/en/language.types.iterable.php
+[bools]: https://www.php.net/manual/en/language.types.boolean.php#language.types.boolean.casting
+[ints]: https://www.php.net/manual/en/language.types.integer.php#language.types.integer.casting
+[floats]: https://www.php.net/manual/en/language.types.float.php#language.types.float.casting
+[strings]: https://www.php.net/manual/en/language.types.string.php#language.types.string.casting
+[stringables]: https://www.php.net/manual/en/language.oop5.magic.php#object.tostring
+[callables]: https://www.php.net/manual/en/function.is-callable.php
+[iterables]: https://www.php.net/manual/en/language.types.iterable.php
 
 [Dhii]: https://github.com/Dhii/dhii
