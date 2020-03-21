@@ -5,7 +5,6 @@ namespace Dhii\Structs;
 use Exception;
 use LogicException;
 use Serializable;
-use TypeError;
 
 /**
  * An implementation of an immutable struct.
@@ -51,7 +50,22 @@ abstract class Struct implements Serializable
      */
     public function __construct(array $data = [])
     {
-        $this->__data = $this->castData($data, true);
+        $props = $this->getPropTypes();
+
+        $this->__data = [];
+        foreach ($props as $key => $type) {
+            $this->__data[$key] = isset($data[$key])
+                ? $type->cast($data[$key])
+                : $type->getDefault();
+
+            unset($data[$key]);
+        }
+
+        if (!empty($data)) {
+            $class = static::class;
+            $props = implode(', ', array_keys($data));
+            throw new LogicException("Struct {$class} does not have the following properties: {$props}");
+        }
     }
 
     /**
@@ -101,20 +115,20 @@ abstract class Struct implements Serializable
      */
     public function with(array $changes)
     {
-        $invalid = array_diff_key($changes, $this->getPropTypes());
-
-        if (!empty($invalid)) {
-            $class = static::class;
-            $props = implode(', ', array_keys($invalid));
-            throw new LogicException("Struct {$class} does not have the following properties: {$props}");
-        }
-
         if (empty($changes)) {
             return $this;
         }
 
         $clone = clone $this;
-        $clone->__data = array_merge($this->__data, $this->castData($changes));
+
+        $props = $this->getPropTypes();
+        foreach ($changes as $key => $value) {
+            if (!isset($props[$key])) {
+                throw static::createUndefinedPropException($key);
+            }
+
+            $clone->__data[$key] = $props[$key]->cast($value);
+        }
 
         return $clone;
     }
@@ -180,43 +194,6 @@ abstract class Struct implements Serializable
     public function unserialize($serialized)
     {
         $this->__data = unserialize($serialized);
-    }
-
-    /**
-     * Casts a given set of data to make sure that it conforms to the struct's property types.
-     *
-     * @since [*next-version*]
-     *
-     * @param array $input    The input data.
-     * @param bool  $defaults If true, default values are included in the output for missing properties.
-     *
-     * @return array The output data.
-     *
-     * @throws TypeError If a value in the input data is of an invalid type.
-     * @throws LogicException If an entry in the input data does not correspond to a property for this struct.
-     */
-    protected function castData(array $input, bool $defaults = false)
-    {
-        $props = $this->getPropTypes();
-        $output = [];
-
-        foreach ($props as $key => $type) {
-            if (isset($input[$key])) {
-                $output[$key] = $type->cast($input[$key]);
-            } elseif ($defaults) {
-                $output[$key] = $type->getDefault();
-            }
-
-            unset($input[$key]);
-        }
-
-        if (!empty($input)) {
-            $class = static::class;
-            $props = implode(', ', array_keys($input));
-            throw new LogicException("Struct {$class} does not have the following properties: {$props}");
-        }
-
-        return $output;
     }
 
     /**
