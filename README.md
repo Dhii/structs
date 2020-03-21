@@ -121,6 +121,7 @@ $flipped = $image->with([
 | `FloatPropType` | `Ty::float()` | Floats and [float-castable][3] values |
 | `StringPropType` | `Ty::string()` | Strings, [string-castable][4] values and objects that implement [`__toString()`][5] |
 | `ArrayPropType` | `Ty::array()` | Array values |
+| `IterablePropType` | `Ty::iterable()` | [Iterable values][7] |
 | `ObjectPropType` | `Ty::object(?)` | Object values, with an optional `instanceof` restriction |
 | `CallablePropType` | `Ty::callable()` | [Callable values][6] |
 | `EnumPropType` | `Ty::enum([...])` | Values that exist within a pre-defined set |
@@ -153,5 +154,6 @@ class MyStruct extends Struct
 [4]: https://www.php.net/manual/en/language.types.string.php#language.types.string.casting
 [5]: https://www.php.net/manual/en/language.oop5.magic.php#object.tostring
 [6]: https://www.php.net/manual/en/function.is-callable.php
+[7]: https://www.php.net/manual/en/language.types.iterable.php
 
 [Dhii]: https://github.com/Dhii/dhii
