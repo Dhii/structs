@@ -2,6 +2,9 @@
 
 namespace Dhii\Structs\Tests\Func;
 
+use ArrayAccess;
+use ArrayObject;
+use Countable;
 use Dhii\Structs\PropType;
 use Dhii\Structs\PropTypes\ArrayPropType;
 use Dhii\Structs\PropTypes\BoolPropType;
@@ -19,6 +22,7 @@ use Dhii\Structs\Ty;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use ReflectionException;
+use Traversable;
 
 /**
  * @since [*next-version*]
@@ -71,6 +75,20 @@ class TyFuncTest extends TestCase
     public function testArray()
     {
         static::assertInstanceOf(ArrayPropType::class, Ty::array());
+    }
+
+    /**
+     * @since [*next-version*]
+     */
+    public function testArrayLike()
+    {
+        $subject = Ty::arrayLike();
+
+        static::assertInstanceOf(UnionPropType::class, $subject);
+        static::assertTrue($subject->isValid([]));
+        static::assertTrue($subject->isValid(['some', 'array']));
+        static::assertTrue($subject->isValid(new ArrayObject([])));
+        static::assertTrue($subject->isValid(new ArrayObject(['some', 'array'])));
     }
 
     /**

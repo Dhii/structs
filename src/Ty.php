@@ -2,6 +2,7 @@
 
 namespace Dhii\Structs;
 
+use ArrayAccess;
 use Dhii\Structs\PropTypes\ArrayPropType;
 use Dhii\Structs\PropTypes\BoolPropType;
 use Dhii\Structs\PropTypes\CallablePropType;
@@ -114,6 +115,21 @@ class Ty
     {
         static $ty = null;
         is_null($ty) && $ty = new ArrayPropType();
+
+        return $ty;
+    }
+
+    /**
+     * Array-like property type. Shorthand for a union of array and {@link ArrayAccess}.
+     *
+     * @since [*next-version*]
+     *
+     * @return UnionPropType
+     */
+    public static function arrayLike() : UnionPropType
+    {
+        static $ty = null;
+        is_null($ty) && $ty = Ty::union(Ty::array(), Ty::object(ArrayAccess::class));
 
         return $ty;
     }
