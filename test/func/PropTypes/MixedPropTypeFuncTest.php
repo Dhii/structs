@@ -5,6 +5,7 @@ namespace Dhii\Structs\Tests\Func\PropTypes;
 use ArrayIterator;
 use ArrayObject;
 use Dhii\Structs\PropTypes\MixedPropType;
+use Exception;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -28,6 +29,7 @@ class MixedPropTypeFuncTest extends TestCase
         static::assertTrue($subject->isValid("123"));
         static::assertTrue($subject->isValid("123.456"));
         static::assertTrue($subject->isValid("foobar"));
+        static::assertTrue($subject->isValid(new Exception()));
         static::assertTrue($subject->isValid([]));
         static::assertTrue($subject->isValid(['test', 'foo', 'bar', 'baz']));
         static::assertTrue($subject->isValid(['test' => 'foo', 'bar' => 'baz']));

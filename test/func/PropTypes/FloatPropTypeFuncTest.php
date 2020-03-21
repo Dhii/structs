@@ -5,6 +5,7 @@ namespace Dhii\Structs\Tests\Func\PropTypes;
 use ArrayIterator;
 use ArrayObject;
 use Dhii\Structs\PropTypes\FloatPropType;
+use Exception;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -28,6 +29,7 @@ class FloatPropTypeFuncTest extends TestCase
         static::assertTrue($subject->isValid("123"));
         static::assertTrue($subject->isValid("123.456"));
         static::assertFalse($subject->isValid("foobar"));
+        static::assertFalse($subject->isValid(new Exception()));
         static::assertFalse($subject->isValid([]));
         static::assertFalse($subject->isValid(['test', 'foo', 'bar', 'baz']));
         static::assertFalse($subject->isValid(['test' => 'foo', 'bar' => 'baz']));

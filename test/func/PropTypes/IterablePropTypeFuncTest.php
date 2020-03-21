@@ -5,6 +5,7 @@ namespace Dhii\Structs\Tests\Func\PropTypes;
 use ArrayIterator;
 use ArrayObject;
 use Dhii\Structs\PropTypes\IterablePropType;
+use Exception;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -28,6 +29,7 @@ class IterablePropTypeFuncTest extends TestCase
         static::assertFalse($subject->isValid("123"));
         static::assertFalse($subject->isValid("123.456"));
         static::assertFalse($subject->isValid("foobar"));
+        static::assertFalse($subject->isValid(new Exception()));
         static::assertTrue($subject->isValid([]));
         static::assertTrue($subject->isValid(['test', 'foo', 'bar', 'baz']));
         static::assertTrue($subject->isValid(['test' => 'foo', 'bar' => 'baz']));

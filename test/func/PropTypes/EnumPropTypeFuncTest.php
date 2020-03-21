@@ -5,6 +5,7 @@ namespace Dhii\Structs\Tests\Func\PropTypes;
 use ArrayIterator;
 use ArrayObject;
 use Dhii\Structs\PropTypes\EnumPropType;
+use Exception;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -64,6 +65,7 @@ class EnumPropTypeFuncTest extends TestCase
         static::assertFalse($subject->isValid("123"));
         static::assertFalse($subject->isValid("123.456"));
         static::assertTrue($subject->isValid("foobar"));
+        static::assertFalse($subject->isValid(new Exception()));
         static::assertFalse($subject->isValid([]));
         static::assertFalse($subject->isValid(['test', 'foo', 'bar', 'baz']));
         static::assertFalse($subject->isValid(['test' => 'foo', 'bar' => 'baz']));

@@ -9,6 +9,7 @@ use CachingIterator;
 use Countable;
 use Dhii\Structs\PropTypes\IntersectionPropType;
 use Dhii\Structs\PropTypes\ObjectPropType;
+use Exception;
 use LimitIterator;
 use PHPUnit\Framework\TestCase;
 use stdClass;
@@ -68,6 +69,7 @@ class IntersectionPropTypeFuncTest extends TestCase
         static::assertFalse($subject->isValid("123"));
         static::assertFalse($subject->isValid("123.456"));
         static::assertFalse($subject->isValid("foobar"));
+        static::assertFalse($subject->isValid(new Exception()));
         static::assertFalse($subject->isValid([]));
         static::assertFalse($subject->isValid(['test', 'foo', 'bar', 'baz']));
         static::assertFalse($subject->isValid(['test' => 'foo', 'bar' => 'baz']));
