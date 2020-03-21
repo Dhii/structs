@@ -149,6 +149,37 @@ class MyStruct extends Struct
 }
 ```
 
+## Performance
+
+Using a user-land replacement for a traditional class will naturally impact performance.
+
+We tested our struct implementation against a traditional class with equivalent properties, corresponding getter
+methods and a constructor.
+
+* **Classes used:** [demo/comparison.php](demo/comparison.php)
+* **Benchmark test:** [demo/benchmark.php](demo/benchmark.php)
+
+The test consisted of constructing an instance of each and reading all of the properties in sequence. Below are the
+average results after 100 tests were run on an ArchLinux machine with a Core i7-6700K CPU clocked at 4.4GHz.
+
+**Results**:
+
+| Num Props | Impact                  |
+| ---------:|:------------------------|
+| 10 props  | `0.0013` seconds slower |
+| 5 props   | `0.0010` seconds slower |
+| 3 props   | `0.0008` seconds slower |
+
+These differences are, in our humble opinion, acceptable. You would need to construct at least a hundred struct
+instances before a performance difference could be felt.
+
+In contrast, the amount of code required to write a PHP class that guarantees type safety and is immutable grows
+exponentially with the number of properties, whereas a struct sees only 1 added line per property (2 if you document
+the property in the class docblock).
+
+Ultimately, we are willing to sacrifice a very small amount of performance for added maintainability and peace of mind.
+Maybe you'll agree with us ☺
+
 [bools]: https://www.php.net/manual/en/language.types.boolean.php#language.types.boolean.casting
 [ints]: https://www.php.net/manual/en/language.types.integer.php#language.types.integer.casting
 [floats]: https://www.php.net/manual/en/language.types.float.php#language.types.float.casting

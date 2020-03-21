@@ -1,5 +1,6 @@
 .idea export-ignore
 nbproject export-ignore
+demo export-ignore
 test export-ignore
 .codeclimate.yml export-ignore
 .gitattributes export-ignore
