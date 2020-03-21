@@ -6,6 +6,7 @@ use ArrayAccess;
 use Dhii\Structs\PropTypes\ArrayPropType;
 use Dhii\Structs\PropTypes\BoolPropType;
 use Dhii\Structs\PropTypes\CallablePropType;
+use Dhii\Structs\PropTypes\CustomPropType;
 use Dhii\Structs\PropTypes\EnumPropType;
 use Dhii\Structs\PropTypes\FloatPropType;
 use Dhii\Structs\PropTypes\IntersectionPropType;
@@ -227,6 +228,22 @@ class Ty
     public static function nullable(PropType $type)
     {
         return new NullablePropType($type);
+    }
+
+    /**
+     * Custom property type.
+     *
+     * @since [*next-version*]
+     *
+     * @param callable $castFn  A function that accepts a value as argument and should return the casted value. If the
+     *                          argument value is not of an acceptable type, a {@link TypeError} should be thrown.
+     * @param mixed    $default The default value, to use when a property of this type is uninitialized.
+     *
+     * @return CustomPropType
+     */
+    public static function custom(callable $castFn, $default = null)
+    {
+        return new CustomPropType('<custom>', $castFn, $default);
     }
 
     /**

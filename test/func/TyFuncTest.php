@@ -9,6 +9,7 @@ use Dhii\Structs\PropType;
 use Dhii\Structs\PropTypes\ArrayPropType;
 use Dhii\Structs\PropTypes\BoolPropType;
 use Dhii\Structs\PropTypes\CallablePropType;
+use Dhii\Structs\PropTypes\CustomPropType;
 use Dhii\Structs\PropTypes\EnumPropType;
 use Dhii\Structs\PropTypes\FloatPropType;
 use Dhii\Structs\PropTypes\IntersectionPropType;
@@ -178,5 +179,20 @@ class TyFuncTest extends TestCase
         $inner = $this->getMockForAbstractClass(PropType::class);
 
         static::assertInstanceOf(NullablePropType::class, Ty::nullable($inner));
+    }
+
+    /**
+     * @since [*next-version*]
+     */
+    public function testCustom()
+    {
+        $fn = function () {
+        };
+        $default = uniqid('default');
+        $subject = Ty::custom($fn, $default);
+
+        static::assertInstanceOf(CustomPropType::class, $subject);
+        static::assertEquals('<custom>', $subject->getName());
+        static::assertEquals($default, $subject->getDefault());
     }
 }
