@@ -1,4 +1,4 @@
-# Dhii - Functions
+# Dhii - Structs
 
 [![Build Status](https://travis-ci.org/dhii/structs.svg?branch=master)](https://travis-ci.org/dhii/structs)
 [![Code Climate](https://codeclimate.com/github/dhii/structs/badges/gpa.svg)](https://codeclimate.com/github/dhii/structs)
