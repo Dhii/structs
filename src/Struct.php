@@ -51,7 +51,7 @@ abstract class Struct implements Serializable
      */
     public function __construct(array $data = [])
     {
-        $this->__data = array_merge($this->getDefaults(), $this->castData($data));
+        $this->__data = $this->castData($data, true);
     }
 
     /**
@@ -71,9 +71,7 @@ abstract class Struct implements Serializable
             throw static::createUndefinedPropException($name);
         }
 
-        return array_key_exists($name, $this->__data)
-            ? $this->__data[$name]
-            : $props[$name]->getDefault();
+        return $this->__data[$name];
     }
 
     /**
@@ -149,7 +147,7 @@ abstract class Struct implements Serializable
      */
     public function toArray()
     {
-        return $this->castData($this->__data);
+        return $this->__data;
     }
 
     /**
@@ -161,7 +159,7 @@ abstract class Struct implements Serializable
      */
     public function __debugInfo()
     {
-        return $this->toArray();
+        return $this->__data;
     }
 
     /**
@@ -189,43 +187,36 @@ abstract class Struct implements Serializable
      *
      * @since [*next-version*]
      *
-     * @param array $data The input data.
+     * @param array $input    The input data.
+     * @param bool  $defaults If true, default values are included in the output for missing properties.
      *
      * @return array The output data.
      *
      * @throws TypeError If a value in the input data is of an invalid type.
      * @throws LogicException If an entry in the input data does not correspond to a property for this struct.
      */
-    protected function castData(array $data)
+    protected function castData(array $input, bool $defaults = false)
     {
         $props = $this->getPropTypes();
         $output = [];
 
-        foreach ($data as $key => $value) {
-            if (!array_key_exists($key, $props)) {
-                throw $this->createUndefinedPropException($key);
+        foreach ($props as $key => $type) {
+            if (isset($input[$key])) {
+                $output[$key] = $type->cast($input[$key]);
+            } elseif ($defaults) {
+                $output[$key] = $type->getDefault();
             }
 
-            $output[$key] = $props[$key]->cast($value);
+            unset($input[$key]);
+        }
+
+        if (!empty($input)) {
+            $class = static::class;
+            $props = implode(', ', array_keys($input));
+            throw new LogicException("Struct {$class} does not have the following properties: {$props}");
         }
 
         return $output;
-    }
-
-    /**
-     * Retrieves the default values for all of the struct's properties.
-     *
-     * @since [*next-version*]
-     *
-     * @return array A map of property names to their corresponding default values.
-     */
-    protected function getDefaults()
-    {
-        $p = $this->getPropTypes();
-
-        return array_map(function (PropType $propType) {
-            return $propType->getDefault();
-        }, $p);
     }
 
     /**
