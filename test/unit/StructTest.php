@@ -4,6 +4,7 @@ namespace Dhii\Structs\Tests\Unit;
 
 use Dhii\Structs\PropType;
 use Dhii\Structs\Struct;
+use Dhii\Structs\Tests\Stubs\StructStub;
 use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -43,9 +44,34 @@ class StructTest extends TestCase
      */
     public function testCreate()
     {
-        $subject = $this->createSubject([], []);
+        {
+            $fooType = $this->getMockForAbstractClass(PropType::class);
+            $barType = $this->getMockForAbstractClass(PropType::class);
+
+            $fooType->method('cast')->willReturnArgument(0);
+            $barType->method('cast')->willReturnArgument(0);
+
+            $propTypes = [
+                'foo' => $fooType,
+                'bar' => $barType,
+            ];
+        }
+        {
+            $foo = uniqid('foo');
+            $bar = uniqid('bar');
+        }
+
+        StructStub::setPropTypes($propTypes);
+
+        $subject = StructStub::create([
+            'foo' => $foo,
+            'bar' => $bar,
+        ]);
 
         static::assertInstanceOf(Struct::class, $subject);
+        static::assertInstanceOf(StructStub::class, $subject);
+        static::assertEquals($foo, $subject->foo);
+        static::assertEquals($bar, $subject->bar);
     }
 
     /**
@@ -59,14 +85,20 @@ class StructTest extends TestCase
             $fooType = $this->getMockForAbstractClass(PropType::class);
             $barType = $this->getMockForAbstractClass(PropType::class);
 
+            $fooType->method('cast')->willReturnArgument(0);
+            $barType->method('cast')->willReturnArgument(0);
+
             $propTypes = [
                 'foo' => $fooType,
                 'bar' => $barType,
             ];
         }
 
-        $this->createSubject($propTypes, [
+        StructStub::setPropTypes($propTypes);
+
+        StructStub::create([
             'invalid' => 'invalid',
+            'bar' => uniqid('bar'),
         ]);
     }
 

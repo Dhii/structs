@@ -69,6 +69,20 @@ abstract class Struct implements Serializable
     }
 
     /**
+     * Creates a struct instance using the given data.
+     *
+     * @since [*next-version*]
+     *
+     * @param array $data A mapping of property names to their values.
+     *
+     * @return static The created instance.
+     */
+    public static function create(array $data = [])
+    {
+        return new static($data);
+    }
+
+    /**
      * Retrieves the value for a property.
      *
      * @since [*next-version*]
