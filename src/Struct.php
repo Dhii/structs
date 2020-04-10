@@ -2,6 +2,7 @@
 
 namespace Dhii\Structs;
 
+use BadMethodCallException;
 use Exception;
 use LogicException;
 use Serializable;
@@ -118,68 +119,7 @@ abstract class Struct implements Serializable
     }
 
     /**
-     * Creates a copy of the struct instance with some modified properties.
-     *
-     * @since [*next-version*]
-     *
-     * @param array $changes An associative array that maps property names to their new values.
-     *
-     * @return Struct The copied struct with the applied changes. If the $changes parameter is empty, no copy is
-     *                performed and the same instance is returned.
-     */
-    public function with(array $changes)
-    {
-        if (empty($changes)) {
-            return $this;
-        }
-
-        $clone = clone $this;
-
-        $props = $this->getPropTypes();
-        foreach ($changes as $key => $value) {
-            if (!isset($props[$key])) {
-                throw static::createUndefinedPropException($key);
-            }
-
-            $clone->__data[$key] = $props[$key]->cast($value);
-        }
-
-        return $clone;
-    }
-
-    /**
-     * Checks if two structs have equal state.
-     *
-     * This method compares the two structs using loose value equivalence (==).
-     *
-     * @since [*next-version*]
-     *
-     * @param Struct $struct The struct to compare to.
-     *
-     * @return bool True if the two structs have equal states, false otherwise.
-     */
-    public function isEqualTo(Struct $struct)
-    {
-        $thisPropsTypes = $this->getPropTypes();
-        $otherPropTypes = $struct->getPropTypes();
-
-        return $this->__data == $struct->__data && $thisPropsTypes == $otherPropTypes;
-    }
-
-    /**
-     * Exports the struct instance to a native associative array.
-     *
-     * @since [*next-version*]
-     *
-     * @return array An associative array that maps the property names to their current values.
-     */
-    public function toArray()
-    {
-        return $this->__data;
-    }
-
-    /**
-     * Functionally equivalent to {@link export()}, but called when a struct instance is passed to {@link var_dump()}.
+     * Functionally equivalent to {@link toArray()}, but called when a struct instance is passed to {@link var_dump()}.
      *
      * @since [*next-version*]
      *
@@ -187,7 +127,7 @@ abstract class Struct implements Serializable
      */
     public function __debugInfo()
     {
-        return $this->__data;
+        return static::toArray($this);
     }
 
     /**
@@ -208,6 +148,97 @@ abstract class Struct implements Serializable
     public function unserialize($serialized)
     {
         $this->__data = unserialize($serialized);
+    }
+
+    /**
+     * Instance-specific variant of {@link propTypes()}, which caches the prop types on a per-class basis to save
+     * time and memory.
+     *
+     * @since [*next-version*]
+     *
+     * @return PropType[] A map of property names to their corresponding types.
+     */
+    protected function getPropTypes()
+    {
+        static $cache = null;
+
+        return ($cache === null)
+            ? $cache = static::propTypes()
+            : $cache;
+    }
+
+    /**
+     * Derives a new copy of struct instance with some modifications to its property values.
+     *
+     * @since [*next-version*]
+     *
+     * @param Struct $struct  The struct to derive from.
+     * @param array  $changes An associative array that maps property names to their new values.
+     *
+     * @return Struct The copied struct with the applied changes. If the $changes parameter is empty, no copy is
+     *                performed and the same instance is returned.
+     */
+    public static function derive(Struct $struct, array $changes)
+    {
+        if (empty($changes)) {
+            return $struct;
+        }
+
+        $clone = clone $struct;
+
+        $props = $struct->getPropTypes();
+        foreach ($changes as $key => $value) {
+            if (!isset($props[$key])) {
+                throw static::createUndefinedPropException($key);
+            }
+
+            $clone->__data[$key] = $props[$key]->cast($value);
+        }
+
+        return $clone;
+    }
+
+    /**
+     * Checks if the given structs have equal state.
+     *
+     * This method compares the structs using loose value equivalence (==).
+     *
+     * @since [*next-version*]
+     *
+     * @param Struct[] $structs The structs to compare.
+     *
+     * @return bool True if all the given structs have equal states, false if at least one is different.
+     */
+    public static function areEqual(Struct...$structs)
+    {
+        if (count($structs) < 2) {
+            throw new BadMethodCallException('You must provide at least 2 structs to compare');
+        }
+
+        $first = reset($structs);
+        while ($second = next($structs)) {
+            if ($first->__data != $second->__data || $first->getPropTypes() != $second->getPropTypes()) {
+                return false;
+            }
+
+            $first = $second;
+        }
+
+        return true;
+    }
+
+    /**
+     * Exports a struct instance to a native associative array.
+     *
+     * @since [*next-version*]
+     *
+     * @param Struct $struct The struct instance to export.
+     *
+     * @return array An associative array that maps the property names to their current values.
+     */
+    public static function toArray(Struct $struct)
+    {
+        return $struct->__data;
     }
 
     /**
@@ -233,5 +264,5 @@ abstract class Struct implements Serializable
      *
      * @return PropType[] A map of property names to their corresponding types.
      */
-    abstract public function getPropTypes() : array;
+    abstract static public function propTypes() : array;
 }

@@ -2,7 +2,10 @@
 
 namespace Dhii\Structs\Tests\Unit;
 
+use BadMethodCallException;
 use Dhii\Structs\PropType;
+use Dhii\Structs\PropTypes\NullablePropType;
+use Dhii\Structs\PropTypes\StringPropType;
 use Dhii\Structs\Struct;
 use Dhii\Structs\Tests\Stubs\StructStub;
 use LogicException;
@@ -205,7 +208,7 @@ class StructTest extends TestCase
      *
      * @throws ReflectionException
      */
-    public function testWith()
+    public function testDerive()
     {
         {
             // Original values given to constructor
@@ -248,7 +251,7 @@ class StructTest extends TestCase
             'bar' => $ogBar,
         ]);
 
-        $newStruct = $subject->with(['foo' => $newFoo]);
+        $newStruct = Struct::derive($subject, ['foo' => $newFoo]);
 
         static::assertInstanceOf(Struct::class, $newStruct);
         static::assertNotSame($newStruct, $subject);
@@ -267,7 +270,7 @@ class StructTest extends TestCase
      *
      * @throws ReflectionException
      */
-    public function testWithNoChanges()
+    public function testDeriveNoChanges()
     {
         {
             // Original values given to constructor
@@ -303,7 +306,7 @@ class StructTest extends TestCase
             'bar' => $ogBar,
         ]);
 
-        $newStruct = $subject->with([]);
+        $newStruct = Struct::derive($subject, []);
 
         static::assertInstanceOf(Struct::class, $newStruct);
         static::assertSame($newStruct, $subject);
@@ -318,7 +321,7 @@ class StructTest extends TestCase
      *
      * @throws ReflectionException
      */
-    public function testWithInvalidProp()
+    public function testDeriveInvalidProp()
     {
         $this->expectException(LogicException::class);
 
@@ -334,7 +337,7 @@ class StructTest extends TestCase
 
         $subject = $this->createSubject($propTypes, []);
 
-        $subject->with([
+        Struct::derive($subject, [
             'invalid' => 'invalid',
         ]);
     }
@@ -344,7 +347,7 @@ class StructTest extends TestCase
      *
      * @throws ReflectionException
      */
-    public function testIsEqualTo()
+    public function testAreEqual()
     {
         {
             $aType = $this->getMockForAbstractClass(PropType::class);
@@ -368,8 +371,8 @@ class StructTest extends TestCase
             $struct2 = $this->createSubject($propTypes, $data);
         }
 
-        static::assertTrue($struct1->isEqualTo($struct2));
-        static::assertTrue($struct2->isEqualTo($struct1));
+        static::assertTrue(Struct::areEqual($struct1, $struct2));
+        static::assertTrue(Struct::areEqual($struct2, $struct1));
     }
 
     /**
@@ -377,7 +380,7 @@ class StructTest extends TestCase
      *
      * @throws ReflectionException
      */
-    public function testIsEqualToDiffData()
+    public function testAreEqualThreeStructs()
     {
         {
             $aType = $this->getMockForAbstractClass(PropType::class);
@@ -392,18 +395,18 @@ class StructTest extends TestCase
             ];
         }
         {
-            $struct1 = $this->createSubject($propTypes, [
+            $data = [
                 'a' => uniqid('a'),
                 'b' => uniqid('b'),
-            ]);
-            $struct2 = $this->createSubject($propTypes, [
-                'a' => uniqid('a'),
-                'b' => uniqid('b'),
-            ]);
+            ];
+
+            $struct1 = $this->createSubject($propTypes, $data);
+            $struct2 = $this->createSubject($propTypes, $data);
+            $struct3 = $this->createSubject($propTypes, $data);
         }
 
-        static::assertFalse($struct1->isEqualTo($struct2));
-        static::assertFalse($struct2->isEqualTo($struct1));
+        static::assertTrue(Struct::areEqual($struct1, $struct2, $struct3));
+        static::assertTrue(Struct::areEqual($struct3, $struct2, $struct1));
     }
 
     /**
@@ -411,16 +414,51 @@ class StructTest extends TestCase
      *
      * @throws ReflectionException
      */
-    public function testIsEqualToDiffPropsSameData()
+    public function testAreEqualDiffData()
     {
         {
             $aType = $this->getMockForAbstractClass(PropType::class);
-            $bType1 = $this->getMockForAbstractClass(PropType::class);
-            $bType2 = $this->getMockForAbstractClass(PropType::class);
+            $bType = $this->getMockForAbstractClass(PropType::class);
 
             $aType->method('cast')->willReturnArgument(0);
-            $bType1->method('cast')->willReturnArgument(0);
-            $bType2->method('cast')->willReturnArgument(0);
+            $bType->method('cast')->willReturnArgument(0);
+
+            $propTypes = [
+                'a' => $aType,
+                'b' => $bType,
+            ];
+        }
+        {
+            $data1 = [
+                'a' => uniqid('a'),
+                'b' => uniqid('b'),
+            ];
+            $data2 = [
+                'a' => uniqid('a'),
+                'b' => uniqid('b'),
+            ];
+            $struct1 = $this->createSubject($propTypes, $data1);
+            $struct2 = $this->createSubject($propTypes, $data1);
+            $struct3 = $this->createSubject($propTypes, $data2);
+        }
+
+        static::assertFalse(Struct::areEqual($struct1, $struct2, $struct3));
+        static::assertFalse(Struct::areEqual($struct3, $struct2, $struct1));
+    }
+
+    /**
+     * @since [*next-version*]
+     *
+     * @throws ReflectionException
+     */
+    public function testAreEqualDiffPropsSameData()
+    {
+        {
+            // Cannot use mocks in this test due to a recursive dependency in the mock class, which causes PHP's
+            // loose equivalence to recurse indefinitely
+            $aType = new StringPropType();
+            $bType1 = new StringPropType();
+            $bType2 = new NullablePropType(new StringPropType());
 
             $propTypes1 = [
                 'a' => $aType,
@@ -433,18 +471,60 @@ class StructTest extends TestCase
             ];
         }
         {
-            $struct1 = $this->createSubject($propTypes1, [
+            $data = [
                 'a' => uniqid('a'),
                 'b' => uniqid('b'),
-            ]);
-            $struct2 = $this->createSubject($propTypes2, [
-                'a' => uniqid('a'),
-                'b' => uniqid('b'),
-            ]);
+            ];
+
+            $struct1 = $this->createSubject($propTypes1, $data);
+            $struct2 = $this->createSubject($propTypes2, $data);
         }
 
-        static::assertFalse($struct1->isEqualTo($struct2));
-        static::assertFalse($struct2->isEqualTo($struct1));
+        static::assertFalse(Struct::areEqual($struct1, $struct2));
+        static::assertFalse(Struct::areEqual($struct2, $struct1));
+    }
+
+    /**
+     * @since [*next-version*]
+     *
+     * @throws ReflectionException
+     */
+    public function testAreEqualOnlyOneArg()
+    {
+        $this->expectException(BadMethodCallException::class);
+
+        {
+            $aType = $this->getMockForAbstractClass(PropType::class);
+            $bType = $this->getMockForAbstractClass(PropType::class);
+
+            $aType->method('cast')->willReturnArgument(0);
+            $bType->method('cast')->willReturnArgument(0);
+
+            $propTypes = [
+                'a' => $aType,
+                'b' => $bType,
+            ];
+        }
+        {
+            $data = [
+                'a' => uniqid('a'),
+                'b' => uniqid('b'),
+            ];
+
+            $struct = $this->createSubject($propTypes, $data);
+        }
+
+        Struct::areEqual($struct);
+    }
+
+    /**
+     * @since [*next-version*]
+     */
+    public function testAreEqualNoArgs()
+    {
+        $this->expectException(BadMethodCallException::class);
+
+        Struct::areEqual();
     }
 
     /**
@@ -487,7 +567,7 @@ class StructTest extends TestCase
             'bar' => $castedBar,
         ];
 
-        self::assertEquals($expected, $subject->toArray());
+        self::assertEquals($expected, Struct::toArray($subject));
         self::assertEquals($expected, $subject->__debugInfo());
     }
 
