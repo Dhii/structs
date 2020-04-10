@@ -226,7 +226,7 @@ class PlayerStatsStruct extends Struct
     /**
      * @inheritDoc
      */
-    public function getPropTypes() : array
+    public static function propTypes() : array
     {
         return [
             'hoursPlayed' => Ty::int(),

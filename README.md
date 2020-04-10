@@ -10,20 +10,21 @@ Create immutable, type-safe, data-only classes
 
 ## Introduction
 
-Often times our code needs to move sets of data around between various units. These can be data models, database
-records, configuration, etc. Due to missing features in PHP (at the time of writing), the only way to have these data
+Often times our code needs to move sets of data around between various units; data models, database records,
+configuration, nodes, etc. Due to missing features in PHP (at the time of writing), the only way to have these data
 sets be immutable **and** type-safe is to declare a class with `protected` properties and define corresponding getter
 methods for each property.
 
-It's also a common occurrence that these data sets are required to be hydrated from a simpler data type, such as a
-native PHP `array`, or de-hydrated into one. Implementing this logic for each data set class is a cumbersome task.
+Furthermore, is common to require such data sets to be instantiated from a simpler data type, such as a native PHP
+`array`, or converted int one, especially when dealing with PHP built-in functions or third party libraries.
 
-This package introduces a user-land version of structs; data-only classes that are type-safe and immutable, with the
-added benefit of being easily serialized and un-serialized.
+It's quite a cumbersome task to implement getters, immutable copy setters and conversion methods. That's why this
+package exists; it introduces a user-land version of structs: data-only classes that are type-safe, immutable, can be
+converted to and from associative arrays, as well as being fully serializable. 
 
 ## Usage
 
-Extend the `Struct` abstract class and declare the property types by implementing `getPropTypes()`:
+Extend the `Struct` abstract class and declare the `propTypes()`:
 
 ```php
 use Dhii\Structs\Struct;
@@ -39,7 +40,7 @@ use Dhii\Structs\Ty;
  */
 class Image extends Struct
 {
-    public function getPropTypes() : array
+    public static function propTypes() : array
     {
         return [
             'url' => Ty::string(),
@@ -50,7 +51,7 @@ class Image extends Struct
 }
 ```
 
-You can then access the struct's properties using normal PHP object property read syntax:
+You can then access the struct's properties using PHP's property accessor syntax:
 
 ```php
 $image = new Image([
@@ -67,6 +68,8 @@ $image->height; // 600
 Custom constructors _may_ be defined. However be wary that this will prevent you from creating instances from arrays.
 
 ```php
+use Dhii\Structs\Struct;
+
 class Image extends Struct
 {
     // Overriding constructors should call the parent constructor
@@ -78,16 +81,18 @@ class Image extends Struct
         ]);
     }
 
-    public function getPropTypes() : array { /* ... */ }
+    public static function propTypes() : array { /* ... */ }
 }
 ```
 
 Consider adding a static "constructor" method instead.
 
 ```php
+use Dhii\Structs\Struct;
+
 class Image extends Struct
 {
-    public function getPropTypes() : array { /* ... */ }
+    public static function propTypes() : array { /* ... */ }
 
     public static function create(string $url, int $width, int $height) {
         return new static([
@@ -99,13 +104,15 @@ class Image extends Struct
 }
 ```
 
-Structs can be copied using the `with()` method, which leaves the original struct unchanged. Multiple properties changes
-may be specified in bulk:
+Structs can be copied using the `derive()` static method, which leaves the original struct unchanged. Multiple
+properties changes may be specified in bulk:
 
 ```php
-$image2 = $image->with(['url' => 'https://example.com/image2.png']);
+use Dhii\Structs\Struct;
 
-$flipped = $image->with([
+$image2 = Struct::derive($image, ['url' => 'https://example.com/image2.png']);
+
+$flipped = Struct::derive($image, [
     'width' => $image->height,
     'height' => $image->width
 ]);
@@ -114,10 +121,12 @@ $flipped = $image->with([
 When extending a struct, you may override the `getPropTypes()` method to add new properties.
 
 ```php
+use Dhii\Structs\Ty;
+
 class NamedImage extends Image
 {
-    public function getPropTypes() : array {
-        $propTypes = parent::getPropTypes();
+    public static function propTypes() : array {
+        $propTypes = parent::propTypes();
         $propTypes['name'] = Ty::string();
 
         return $propTypes;
@@ -156,7 +165,7 @@ use Dhii\Structs\Ty;
 
 class MyStruct extends Struct
 {
-    public function getPropTypes() : array {
+    public static function propTypes() : array {
         return [
             // Nullable object type
             'owner' => Ty::nullable(Ty::object(DateTime::class)),
@@ -202,12 +211,12 @@ average results after 100 tests were run on an ArchLinux machine with a Core i7-
 
 | Num Props | Impact                  |
 | ---------:|:------------------------|
-| 10 props  | `0.0013` seconds slower |
-| 5 props   | `0.0010` seconds slower |
-| 3 props   | `0.0008` seconds slower |
+| 10 props  | `0.000057` seconds slower |
+| 5 props   | `0.000039` seconds slower |
+| 3 props   | `0.000018` seconds slower |
 
-These differences are, in our humble opinion, acceptable. You would need to construct at least a hundred struct
-instances before a performance difference could be felt.
+These differences are, in our humble opinion, very acceptable. You would need to construct thousands of struct instances
+before a performance difference becomes noticeable.
 
 In contrast, the amount of code required to write a PHP class that guarantees type safety and is immutable grows
 exponentially with the number of properties, whereas a struct sees only 1 added line per property (2 if you document
