@@ -85,7 +85,8 @@ class Image extends Struct
 }
 ```
 
-Consider adding a static "constructor" method instead.
+Consider adding a static "factory" method instead of a constructor.  
+This will also ensure that you struct instances are truly data-only.
 
 ```php
 use Dhii\Structs\Struct;
@@ -105,7 +106,7 @@ class Image extends Struct
 ```
 
 Structs can be copied using the `derive()` static method, which leaves the original struct unchanged. Multiple
-properties changes may be specified in bulk:
+property changes may be specified in bulk:
 
 ```php
 use Dhii\Structs\Struct;
@@ -118,7 +119,7 @@ $flipped = Struct::derive($image, [
 ]);
 ```
 
-When extending a struct, you may override the `getPropTypes()` method to add new properties.
+When extending a struct, you may override the `propTypes()` method to add new properties.
 
 ```php
 use Dhii\Structs\Ty;
@@ -135,7 +136,7 @@ class NamedImage extends Image
 ```
 
 **Some advice**: Take care if altering the parent struct's existing prop types to make sure that new types are
-covariant. And remember, removing or renaming props breaks [LSP][lsp].
+covariant. And remember, removing or renaming properties breaks [LSP][lsp].
 
 ## Property Types
 
