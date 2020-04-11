@@ -161,7 +161,7 @@ abstract class Struct implements Serializable
      * @param Struct $struct  The struct to derive from.
      * @param array  $changes An associative array that maps property names to their new values.
      *
-     * @return Struct The copied struct with the applied changes. If the $changes parameter is empty, no copy is
+     * @return static The copied struct with the applied changes. If the $changes parameter is empty, no copy is
      *                performed and the same instance is returned.
      */
     public static function derive(Struct $struct, array $changes)
