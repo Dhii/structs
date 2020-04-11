@@ -30,6 +30,7 @@ class StructTest extends TestCase
      */
     protected function createSubject(array $propTypes, array $data = [])
     {
+        /* @var $mock MockObject&Struct */
         $mock = $this->getMockBuilder(Struct::class)
                      ->disableOriginalConstructor()
                      ->setMethods(['getPropTypes'])
@@ -44,6 +45,8 @@ class StructTest extends TestCase
 
     /**
      * @since [*next-version*]
+     *
+     * @throws ReflectionException
      */
     public function testCreate()
     {
@@ -64,21 +67,20 @@ class StructTest extends TestCase
             $bar = uniqid('bar');
         }
 
-        StructStub::setPropTypes($propTypes);
-
-        $subject = StructStub::create([
+        $subject = $this->createSubject($propTypes, [
             'foo' => $foo,
             'bar' => $bar,
         ]);
 
         static::assertInstanceOf(Struct::class, $subject);
-        static::assertInstanceOf(StructStub::class, $subject);
         static::assertEquals($foo, $subject->foo);
         static::assertEquals($bar, $subject->bar);
     }
 
     /**
      * @since [*next-version*]
+     *
+     * @throws ReflectionException
      */
     public function testCreateInvalidProp()
     {
@@ -97,9 +99,7 @@ class StructTest extends TestCase
             ];
         }
 
-        StructStub::setPropTypes($propTypes);
-
-        StructStub::create([
+        $this->createSubject($propTypes, [
             'invalid' => 'invalid',
             'bar' => uniqid('bar'),
         ]);
