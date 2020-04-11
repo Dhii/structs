@@ -483,8 +483,6 @@ class StructTest extends TestCase
 
     /**
      * @since [*next-version*]
-     *
-     * @throws ReflectionException
      */
     public function testAreEqualDiffPropsSameData()
     {
