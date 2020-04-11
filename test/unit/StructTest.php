@@ -11,6 +11,7 @@ use Dhii\Structs\Tests\Stubs\StructStub;
 use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 use ReflectionException;
 
 /**
@@ -103,6 +104,40 @@ class StructTest extends TestCase
             'invalid' => 'invalid',
             'bar' => uniqid('bar'),
         ]);
+    }
+
+    /**
+     * @since [*next-version*]
+     *
+     * @throws ReflectionException
+     */
+    public function testGetPropTypesCache()
+    {
+        {
+            $fooType = $this->getMockForAbstractClass(PropType::class);
+            $barType = $this->getMockForAbstractClass(PropType::class);
+
+            $fooType->method('cast')->willReturnArgument(0);
+            $barType->method('cast')->willReturnArgument(0);
+
+            $propTypes = [
+                'foo' => $fooType,
+                'bar' => $barType,
+            ];
+        }
+
+        StructStub::$propTypes = $propTypes;
+        StructStub::$numPropTypesCalled = 0;
+
+        $subject = new StructStub();
+
+        $reflect = new ReflectionClass($subject);
+        $getPropTypes = $reflect->getMethod('getPropTypes')->getClosure($subject);
+
+        static::assertEquals($propTypes, $getPropTypes());
+        static::assertEquals($propTypes, $getPropTypes());
+        static::assertEquals($propTypes, $getPropTypes());
+        static::assertEquals(1, StructStub::$numPropTypesCalled);
     }
 
     /**

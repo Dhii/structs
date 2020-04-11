@@ -2,7 +2,6 @@
 
 namespace Dhii\Structs\Tests\Stubs;
 
-use Dhii\Structs\PropType;
 use Dhii\Structs\Struct;
 
 /**
@@ -17,7 +16,14 @@ class StructStub extends Struct
      *
      * @var array
      */
-    protected static $__propTypes;
+    public static $propTypes;
+
+    /**
+     * @since [*next-version*]
+     *
+     * @var int
+     */
+    public static $numPropTypesCalled = 0;
 
     /**
      * @inheritDoc
@@ -26,18 +32,8 @@ class StructStub extends Struct
      */
     public static function propTypes() : array
     {
-        return static::$__propTypes;
-    }
+        static::$numPropTypesCalled++;
 
-    /**
-     * Sets the stub's prop types.
-     *
-     * @since [*next-version*]
-     *
-     * @param PropType[] $propTypes A mapping of property names to their corresponding types.
-     */
-    public static function setPropTypes(array $propTypes)
-    {
-        static::$__propTypes = $propTypes;
+        return static::$propTypes;
     }
 }
