@@ -193,6 +193,20 @@ class MyStruct extends Struct
 }
 ```
 
+## Embracing Static
+
+Data processing and transformation methods are typically written as instance methods, which defeat the purpose of using
+structs.
+
+This is where static functionality can be put to good use. By declaring static methods, you maintain data-only struct
+instances while also providing necessary or useful functionality, without having to deal with loading function files.
+
+There are other benefits that come with static functionality, such as the ability to seamlessly invoke "methods" as
+functions without the need for reflection. This benefit can become especially prominent when using array functions such
+as `array_map` or `array_reduce`.
+
+See the example in [demo/example.php](demo/example.php).
+
 ## Performance
 
 Using a user-land replacement for a traditional class will naturally impact performance.
