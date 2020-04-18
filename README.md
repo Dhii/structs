@@ -218,7 +218,8 @@ methods and a constructor.
 * **Benchmark test:** [demo/benchmark.php](demo/benchmark.php)
 
 The test consisted of constructing an instance of each and reading all of the properties in sequence. Below are the
-average results after 100 tests were run on an ArchLinux machine with a Core i7-6700K CPU clocked at 4.4GHz.
+average results after 100 tests were run on an ArchLinux machine with a Core i7-6700K CPU clocked at 4.4GHz, with memory
+clocking at 2666MHz, with no form of caching enabling.
 
 **Results**:
 
