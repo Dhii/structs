@@ -12,6 +12,7 @@ use Dhii\Structs\PropTypes\FloatPropType;
 use Dhii\Structs\PropTypes\IntersectionPropType;
 use Dhii\Structs\PropTypes\IntPropType;
 use Dhii\Structs\PropTypes\IterablePropType;
+use Dhii\Structs\PropTypes\MixedPropType;
 use Dhii\Structs\PropTypes\NullablePropType;
 use Dhii\Structs\PropTypes\ObjectPropType;
 use Dhii\Structs\PropTypes\StringPropType;
@@ -30,6 +31,21 @@ use TypeError;
  */
 class Ty
 {
+    /**
+     * Mixed property type.
+     *
+     * @since [*next-version*]
+     *
+     * @return MixedPropType
+     */
+    public static function mixed() : MixedPropType
+    {
+        static $ty = null;
+        is_null($ty) && $ty = new MixedPropType();
+
+        return $ty;
+    }
+
     /**
      * Integer property type.
      *

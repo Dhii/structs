@@ -15,6 +15,7 @@ use Dhii\Structs\PropTypes\FloatPropType;
 use Dhii\Structs\PropTypes\IntersectionPropType;
 use Dhii\Structs\PropTypes\IntPropType;
 use Dhii\Structs\PropTypes\IterablePropType;
+use Dhii\Structs\PropTypes\MixedPropType;
 use Dhii\Structs\PropTypes\NullablePropType;
 use Dhii\Structs\PropTypes\ObjectPropType;
 use Dhii\Structs\PropTypes\StringPropType;
@@ -30,6 +31,14 @@ use Traversable;
  */
 class TyFuncTest extends TestCase
 {
+    /**
+     * @since [*next-version*]
+     */
+    public function testMixed()
+    {
+        static::assertInstanceOf(MixedPropType::class, Ty::mixed());
+    }
+
     /**
      * @since [*next-version*]
      */
