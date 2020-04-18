@@ -27,20 +27,33 @@ use Serializable;
  *
  * Example: `$struct->{"bob page"}`
  *
- * Lastly, this class only reserves one property name: "__data". The property is prefixed with a double underscore to
- * reduce the probability of conflicting with any consumer property name. However, it is recommended to avoid to using
- * double underscore prefixes as additional properties may be added in future versions to accommodate new features.
+ * Lastly, the class reverses some property names for internal use. These properties use double underscore prefixed
+ * names so as to reduce the probability of conflicting with any consumer struct property names. Any additional
+ * internal properties that may be added in the future will also be prefixed with double underscores. Therefore, it is
+ * highly recommended to avoid using double underscore prefixes in property names; this should ensure that your struct
+ * properties will never conflict.
  *
  * @since [*next-version*]
  */
 abstract class Struct implements Serializable
 {
     /**
+     * A cache of the prop types.
+     *
      * @since [*next-version*]
      *
      * @var array
      */
-    protected $__data;
+    protected static $__propTypesCache = null;
+
+    /**
+     * The struct's property data map.
+     *
+     * @since [*next-version*]
+     *
+     * @var array
+     */
+    protected $__data = [];
 
     /**
      * Constructor.
@@ -146,11 +159,11 @@ abstract class Struct implements Serializable
      */
     protected function getPropTypes()
     {
-        static $cache = null;
+        if (static::$__propTypesCache === null) {
+            static::$__propTypesCache = static::propTypes();
+        }
 
-        return ($cache === null)
-            ? $cache = static::propTypes()
-            : $cache;
+        return static::$__propTypesCache;
     }
 
     /**

@@ -30,6 +30,19 @@ class StructStub extends Struct
      *
      * @since [*next-version*]
      */
+    public static function create(array $data = [])
+    {
+        static::$numPropTypesCalled = 0;
+        static::$__propTypesCache = null;
+
+        return parent::create($data);
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since [*next-version*]
+     */
     public static function propTypes() : array
     {
         static::$numPropTypesCalled++;
