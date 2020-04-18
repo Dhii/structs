@@ -69,7 +69,7 @@ class StructTest extends TestCase
         }
 
         StructStub::$propTypes = $propTypes;
-        $subject = StructStub::create([
+        $subject = StructStub::fromArray([
             'foo' => $foo,
             'bar' => $bar,
         ]);
@@ -102,7 +102,7 @@ class StructTest extends TestCase
         }
 
         StructStub::$propTypes = $propTypes;
-        StructStub::create([
+        StructStub::fromArray([
             'invalid' => 'invalid',
             'bar' => uniqid('bar'),
         ]);
@@ -129,7 +129,7 @@ class StructTest extends TestCase
         }
 
         StructStub::$propTypes = $propTypes;
-        $subject = StructStub::create();
+        $subject = StructStub::fromArray();
 
         $reflect = new ReflectionClass($subject);
         $getPropTypes = $reflect->getMethod('getPropTypes')->getClosure($subject);

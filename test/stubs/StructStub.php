@@ -30,12 +30,12 @@ class StructStub extends Struct
      *
      * @since [*next-version*]
      */
-    public static function create(array $data = [])
+    public static function fromArray(array $data = [])
     {
         static::$numPropTypesCalled = 0;
         static::$__propTypesCache = null;
 
-        return parent::create($data);
+        return parent::fromArray($data);
     }
 
     /**

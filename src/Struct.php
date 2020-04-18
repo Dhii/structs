@@ -91,7 +91,7 @@ abstract class Struct implements Serializable
      *
      * @return static The created struct instance.
      */
-    public static function create(array $data = [])
+    public static function fromArray(array $data = [])
     {
         return new static($data);
     }
