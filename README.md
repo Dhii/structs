@@ -63,35 +63,23 @@ $image->width; // 800
 $image->height; // 600
 ```
 
-Custom constructors _may_ be defined. However be wary that this will prevent you from creating instances from arrays.
+Overriding the constructor is highly discouraged. Doing so will break the static `fromArray` method.
+
+Consider adding static "factory" methods instead, keeping structs agnostic of instance details.
 
 ```php
 use Dhii\Structs\Struct;
+use Dhii\Structs\Ty;
 
 class Image extends Struct
 {
-    // Overriding constructors should call the parent constructor
-    public function __construct(string $url, int $width, int $height) {
-        parent::__construct([
-            'url' => $url,
-            'width' => $width,
-            'height' => $height
-        ]);
+    public static function propTypes() : array {
+        return [
+            'url' => Ty::string(),
+            'width' => Ty::int(),
+            'height' => Ty::int(),
+        ];
     }
-
-    public static function propTypes() : array { /* ... */ }
-}
-```
-
-Consider adding a static "factory" method instead of a constructor.  
-This will also ensure that you struct instances are truly data-only.
-
-```php
-use Dhii\Structs\Struct;
-
-class Image extends Struct
-{
-    public static function propTypes() : array { /* ... */ }
 
     public static function create(string $url, int $width, int $height) {
         return new static([
