@@ -60,7 +60,7 @@ abstract class Struct implements Serializable
      *
      * @since [*next-version*]
      *
-     * @param array $data A mapping of property names to their values.
+     * @param array $data An associative array that maps property names to their corresponding values.
      */
     public function __construct(array $data = [])
     {
@@ -80,6 +80,20 @@ abstract class Struct implements Serializable
             $props = implode(', ', array_keys($data));
             throw new LogicException("Struct {$class} does not have the following properties: {$props}");
         }
+    }
+
+    /**
+     * A static version of the constructor.
+     *
+     * @since [*next-version*]
+     *
+     * @param array $data An associative array that maps property names to their corresponding values.
+     *
+     * @return static The created struct instance.
+     */
+    public static function create(array $data = [])
+    {
+        return new static($data);
     }
 
     /**
