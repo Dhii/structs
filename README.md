@@ -63,7 +63,7 @@ $image->width; // 800
 $image->height; // 600
 ```
 
-Overriding the constructor is highly discouraged. Doing so will break the static `fromArray` method.
+Overriding the constructor is highly discouraged. Doing so will break the static `fromArray()` method.
 
 Consider adding static "factory" methods instead, keeping structs agnostic of instance details.
 
@@ -89,19 +89,25 @@ class Image extends Struct
         ]);
     }
 }
+
+$image1 = Image::fromArray([
+    'url' => 'https://example.com/image.png',
+    'width' => '800',
+    'height' => '600',
+]);
+
+$image2 = Image::create('https://example.com/image.png', 600, 800);
 ```
 
 Structs can be copied using the `derive()` static method, which leaves the original struct unchanged. Multiple
 property changes may be specified in bulk:
 
 ```php
-use Dhii\Structs\Struct;
+$image2 = Image::derive($image1, ['url' => 'https://example.com/image2.png']);
 
-$image2 = Struct::derive($image, ['url' => 'https://example.com/image2.png']);
-
-$flipped = Struct::derive($image, [
-    'width' => $image->height,
-    'height' => $image->width
+$flipped = Image::derive($image1, [
+    'width' => $image1->height,
+    'height' => $image1->width
 ]);
 ```
 
