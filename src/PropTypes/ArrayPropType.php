@@ -8,10 +8,31 @@ use Dhii\Structs\Ty;
 /**
  * Array struct property type.
  *
+ * Can optionally restrict the types of array elements.
+ *
  * @since [*next-version*]
  */
 class ArrayPropType implements PropType
 {
+    /**
+     * @since [*next-version*]
+     *
+     * @var PropType|null
+     */
+    protected $elType;
+
+    /**
+     * Constructor.
+     *
+     * @since [*next-version*]
+     *
+     * @param PropType|null $elType Optional type restriction for array elements.
+     */
+    public function __construct(?PropType $elType = null)
+    {
+        $this->elType = $elType;
+    }
+
     /**
      * @inheritDoc
      *
@@ -39,7 +60,17 @@ class ArrayPropType implements PropType
      */
     public function isValid($value) : bool
     {
-        return is_array($value);
+        if (!is_array($value)) {
+            return false;
+        }
+
+        if ($this->elType === null) {
+            return true;
+        }
+
+        return array_reduce($value, function ($prev, $curr) {
+            return $prev && $this->elType->isValid($curr);
+        }, true);
     }
 
     /**
@@ -49,10 +80,16 @@ class ArrayPropType implements PropType
      */
     public function cast($value)
     {
-        if ($this->isValid($value)) {
+        if (!is_array($value)) {
+            throw Ty::createTypeError($this, $value);
+        }
+
+        if ($this->elType === null) {
             return $value;
         }
 
-        throw Ty::createTypeError($this, $value);
+        return array_map(function ($elem) {
+            return $this->elType->cast($elem);
+        }, $value);
     }
 }

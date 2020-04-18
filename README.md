@@ -146,6 +146,7 @@ covariant. And remember, removing or renaming properties breaks [LSP][lsp].
 | `Ty::float()` | Floats and [float-castable][floats] values |
 | `Ty::string()` | Strings, [string-castable][strings] values and objects that implement [`__toString()`][stringables] |
 | `Ty::array()` | Array values |
+| `Ty::arrayOf(?)` | Array values with elements of a specific type |
 | `Ty::arrayLike()` | Array values and [`ArrayAccess`][array-access] objects |
 | `Ty::iterable()` | [Iterable values][iterables] |
 | `Ty::object(...)` | Object values, with an optional parent class restrictions |

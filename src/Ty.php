@@ -121,6 +121,20 @@ class Ty
     }
 
     /**
+     * Array property type.
+     *
+     * @since [*next-version*]
+     *
+     * @param PropType $ty type for array elements.
+     *
+     * @return ArrayPropType
+     */
+    public static function arrayOf(PropType $ty) : ArrayPropType
+    {
+        return new ArrayPropType($ty);
+    }
+
+    /**
      * Array-like property type. Shorthand for a union of array and {@link ArrayAccess}.
      *
      * @since [*next-version*]

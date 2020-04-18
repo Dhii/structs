@@ -81,6 +81,14 @@ class TyFuncTest extends TestCase
     /**
      * @since [*next-version*]
      */
+    public function testArrayOf()
+    {
+        static::assertInstanceOf(ArrayPropType::class, Ty::arrayOf(Ty::object(Countable::class)));
+    }
+
+    /**
+     * @since [*next-version*]
+     */
     public function testArrayLike()
     {
         $subject = Ty::arrayLike();
