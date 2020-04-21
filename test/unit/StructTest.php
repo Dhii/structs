@@ -2,17 +2,10 @@
 
 namespace Dhii\Structs\Tests\Unit;
 
-use BadMethodCallException;
-use Dhii\Structs\PropType;
-use Dhii\Structs\PropTypes\NullablePropType;
-use Dhii\Structs\PropTypes\StringPropType;
 use Dhii\Structs\Struct;
-use Dhii\Structs\Tests\Stubs\StructStub;
+use Dhii\Structs\Tests\Stubs\MockPropType;
 use LogicException;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use ReflectionClass;
-use ReflectionException;
 
 /**
  * @since [*next-version*]
@@ -20,357 +13,318 @@ use ReflectionException;
 class StructTest extends TestCase
 {
     /**
-     * Creates an instance of the {@link Struct} class, with a given list of property types and set of data.
-     *
      * @since [*next-version*]
-     *
-     * @param array $propTypes The property types.
-     * @param array $data      The struct data.
-     *
-     * @return MockObject&Struct
-     */
-    protected function createSubject(array $propTypes, array $data = [])
-    {
-        /* @var $mock MockObject&Struct */
-        $mock = $this->getMockBuilder(Struct::class)
-                     ->disableOriginalConstructor()
-                     ->setMethods(['getPropTypes'])
-                     ->getMockForAbstractClass();
-
-        $mock->method('getPropTypes')->willReturn($propTypes);
-
-        $mock->__construct($data);
-
-        return $mock;
-    }
-
-    /**
-     * @since [*next-version*]
-     *
-     * @throws ReflectionException
      */
     public function testCreate()
     {
-        {
-            $fooType = $this->getMockForAbstractClass(PropType::class);
-            $barType = $this->getMockForAbstractClass(PropType::class);
+        $data = [
+            'foo' => '123',
+            'bar' => '456',
+        ];
 
-            $fooType->method('cast')->willReturnArgument(0);
-            $barType->method('cast')->willReturnArgument(0);
-
-            $propTypes = [
-                'foo' => $fooType,
-                'bar' => $barType,
-            ];
-        }
-        {
-            $foo = uniqid('foo');
-            $bar = uniqid('bar');
-        }
-
-        StructStub::$propTypes = $propTypes;
-        $subject = StructStub::fromArray([
-            'foo' => $foo,
-            'bar' => $bar,
-        ]);
+        $subject = new class($data) extends Struct {
+            protected static function propTypes() : array
+            {
+                return [
+                    'foo' => MockPropType::create()->willReturnArg(),
+                    'bar' => MockPropType::create()->willReturnArg(),
+                ];
+            }
+        };
 
         static::assertInstanceOf(Struct::class, $subject);
-        static::assertEquals($foo, $subject->foo);
-        static::assertEquals($bar, $subject->bar);
+        static::assertEquals('123', $subject->foo);
+        static::assertEquals('456', $subject->bar);
     }
 
     /**
      * @since [*next-version*]
-     *
-     * @throws ReflectionException
      */
-    public function testCreateInvalidProp()
+    public function testCreateMissingProp()
+    {
+        $data = [
+            'bar' => '456',
+        ];
+
+        $subject = new class($data) extends Struct {
+            static protected function propTypes() : array
+            {
+                return [
+                    'foo' => MockPropType::create()->willReturnArg()->defaultsTo('DEFAULT'),
+                    'bar' => MockPropType::create()->willReturnArg()->defaultsTo('DEFAULT'),
+                ];
+            }
+        };
+
+        static::assertInstanceOf(Struct::class, $subject);
+        static::assertEquals('DEFAULT', $subject->foo);
+        static::assertEquals('456', $subject->bar);
+    }
+
+    /**
+     * @since [*next-version*]
+     */
+    public function testCreateExtraProp()
     {
         $this->expectException(LogicException::class);
 
-        {
-            $fooType = $this->getMockForAbstractClass(PropType::class);
-            $barType = $this->getMockForAbstractClass(PropType::class);
-
-            $fooType->method('cast')->willReturnArgument(0);
-            $barType->method('cast')->willReturnArgument(0);
-
-            $propTypes = [
-                'foo' => $fooType,
-                'bar' => $barType,
-            ];
-        }
-
-        StructStub::$propTypes = $propTypes;
-        StructStub::fromArray([
+        $data = [
             'invalid' => 'invalid',
-            'bar' => uniqid('bar'),
-        ]);
+            'foo' => '123',
+            'bar' => '456',
+        ];
+
+        new class($data) extends Struct {
+            static protected function propTypes() : array
+            {
+                return [
+                    'foo' => MockPropType::create()->willReturnArg(),
+                    'bar' => MockPropType::create()->willReturnArg(),
+                ];
+            }
+        };
     }
 
     /**
      * @since [*next-version*]
-     *
-     * @throws ReflectionException
+     */
+    public function testFromArray()
+    {
+        $data = [
+            'foo' => '123',
+            'bar' => '456',
+        ];
+
+        $dummy = new class($data) extends Struct {
+            public static $ctorCalled = 0;
+
+            public function __construct(array $data = [])
+            {
+                parent::__construct($data);
+                static::$ctorCalled++;
+            }
+
+            protected static function propTypes() : array
+            {
+                return [
+                    'foo' => MockPropType::create()->willReturnArg(),
+                    'bar' => MockPropType::create()->willReturnArg(),
+                ];
+            }
+        };
+
+        // Reset the counter, since creating the dummy instance increments it
+        $dummy::$ctorCalled = 0;
+
+        $subject = $dummy::fromArray($data);
+
+        // Assert that the ctor was called
+        static::assertEquals(1, $dummy::$ctorCalled);
+        // Assert that the new instance is of the same class as the dummy
+        static::assertInstanceOf(get_class($dummy), $subject);
+    }
+
+    /**
+     * @since [*next-version*]
      */
     public function testGetPropTypesCache()
     {
-        {
-            $fooType = $this->getMockForAbstractClass(PropType::class);
-            $barType = $this->getMockForAbstractClass(PropType::class);
+        $subject = new class(['foo' => '', 'bar' => '', 'baz' => '']) extends Struct {
+            public static $numCalled = 0;
 
-            $fooType->method('cast')->willReturnArgument(0);
-            $barType->method('cast')->willReturnArgument(0);
+            protected static function propTypes() : array
+            {
+                static::$numCalled++;
 
-            $propTypes = [
-                'foo' => $fooType,
-                'bar' => $barType,
-            ];
-        }
+                return [
+                    'foo' => MockPropType::create()->willReturnArg(),
+                    'bar' => MockPropType::create()->willReturnArg(),
+                    'baz' => MockPropType::create()->willReturnArg(),
+                ];
+            }
+        };
 
-        StructStub::$propTypes = $propTypes;
-        $subject = StructStub::fromArray();
+        // The prop types are fetched when a property is read
+        $subject->foo;
+        $subject->bar;
+        $subject->baz;
 
-        $reflect = new ReflectionClass($subject);
-        $getPropTypes = $reflect->getMethod('getPropTypes')->getClosure($subject);
-
-        static::assertEquals($propTypes, $getPropTypes());
-        static::assertEquals($propTypes, $getPropTypes());
-        static::assertEquals($propTypes, $getPropTypes());
-        static::assertEquals(1, StructStub::$numPropTypesCalled);
+        // Assert only called once
+        static::assertEquals(1, $subject::$numCalled);
     }
 
     /**
      * @since [*next-version*]
-     *
-     * @throws ReflectionException
      */
     public function testReadProp()
     {
-        {
-            $value = uniqid('value');
-            $casted = uniqid('casted');
-        }
-        {
-            $propType = $this->getMockForAbstractClass(PropType::class);
-            $propType->method('cast')->willReturn($casted);
+        $data = [
+            'foo' => '123',
+        ];
 
-            $propTypes = [
-                'foo' => $propType,
-            ];
-        }
-        {
-            $data = [
-                'foo' => $value,
-            ];
-        }
+        $subject = new class($data) extends Struct {
+            static protected function propTypes() : array
+            {
+                return [
+                    'foo' => MockPropType::create()->willReturn('456'),
+                ];
+            }
+        };
 
-        $subject = $this->createSubject($propTypes, $data);
-
-        self::assertEquals($casted, $subject->foo);
+        self::assertEquals('456', $subject->foo);
     }
 
     /**
      * @since [*next-version*]
-     *
-     * @throws ReflectionException
      */
     public function testReadPropDefault()
     {
-        {
-            $default = uniqid('default');
-        }
-        {
-            $propType = $this->getMockForAbstractClass(PropType::class);
-            $propType->method('getDefault')->willReturn($default);
+        $subject = new class([]) extends Struct {
+            static protected function propTypes() : array
+            {
+                return [
+                    'foo' => MockPropType::create()->willReturn('casted')->defaultsTo('default'),
+                ];
+            }
+        };
 
-            $propTypes = [
-                'foo' => $propType,
-            ];
-        }
-
-        $subject = $this->createSubject($propTypes, []);
-
-        self::assertEquals($default, $subject->foo);
+        self::assertEquals('default', $subject->foo);
     }
 
     /**
      * @since [*next-version*]
-     *
-     * @throws ReflectionException
      */
     public function testReadPropUndefined()
     {
         $this->expectException(LogicException::class);
 
-        {
-            $propType = $this->getMockForAbstractClass(PropType::class);
-
-            $propTypes = [
-                'foo' => $propType,
-            ];
-        }
-
-        $subject = $this->createSubject($propTypes, []);
+        $subject = new class(['foo' => '123']) extends Struct {
+            static protected function propTypes() : array
+            {
+                return [
+                    'foo' => MockPropType::create()->willReturnArg(),
+                ];
+            }
+        };
 
         $subject->bar;
     }
 
     /**
      * @since [*next-version*]
-     *
-     * @throws ReflectionException
      */
     public function testSetProp()
     {
         $this->expectException(LogicException::class);
 
-        {
-            $propType = $this->getMockForAbstractClass(PropType::class);
-
-            $propTypes = [
-                'foo' => $propType,
-            ];
-        }
-
-        $subject = $this->createSubject($propTypes, []);
+        $subject = new class([]) extends Struct {
+            static protected function propTypes() : array
+            {
+                return [
+                    'foo' => MockPropType::create()->willReturnArg(),
+                ];
+            }
+        };
 
         $subject->foo = uniqid('new-value');
     }
 
     /**
      * @since [*next-version*]
-     *
-     * @throws ReflectionException
      */
     public function testDerive()
     {
-        {
-            // Original values given to constructor
-            $ogFoo = uniqid('foo');
-            $ogBar = uniqid('bar');
+        $data = [
+            'foo' => 'foo',
+            'bar' => 'bar',
+        ];
 
-            // Casted versions of values given to constructor
-            $castedFoo = uniqid('casted-foo');
-            $castedBar = uniqid('casted-bar');
+        $subject = new class($data) extends Struct {
+            static protected $__propTypesCache;
 
-            // New value given to with()
-            $newFoo = uniqid('new-foo');
+            static protected function propTypes() : array
+            {
+                return [
+                    'foo' => MockPropType::create()->willDo(function ($arg) {
+                        return $arg . '!';
+                    }),
+                    'bar' => MockPropType::create()->willDo(function ($arg) {
+                        return $arg . '!';
+                    }),
+                ];
+            }
+        };
 
-            // Casted version of value given to with()
-            $castedNewFoo = uniqid('casted-new-foo');
-        }
-        {
-            $fooType = $this->getMockForAbstractClass(PropType::class);
-            $barType = $this->getMockForAbstractClass(PropType::class);
+        $newStruct = $subject::derive($subject, ['foo' => 'NEW']);
 
-            // Cast method are called twice: once during constructor, once during with()
-            $fooType->expects(static::exactly(2))
-                    ->method('cast')
-                    ->withConsecutive([$ogFoo], [$newFoo])
-                    ->willReturnOnConsecutiveCalls($castedFoo, $castedNewFoo);
-
-            $barType->expects(static::once())
-                    ->method('cast')
-                    ->with($ogBar)
-                    ->willReturn($castedBar);
-
-            $propTypes = [
-                'foo' => $fooType,
-                'bar' => $barType,
-            ];
-        }
-
-        $subject = $this->createSubject($propTypes, [
-            'foo' => $ogFoo,
-            'bar' => $ogBar,
-        ]);
-
-        $newStruct = Struct::derive($subject, ['foo' => $newFoo]);
-
-        static::assertInstanceOf(Struct::class, $newStruct);
+        // Check if new instance is of the same class
+        static::assertInstanceOf(get_class($subject), $newStruct);
+        // Check that the original and new instances are not the same
         static::assertNotSame($newStruct, $subject);
 
-        // Check that new struct has correct changes
-        static::assertEquals($castedNewFoo, $newStruct->foo);
-        static::assertEquals($castedBar, $newStruct->bar);
+        // Check that new struct has incorporated the changes, including any casting modifications, where appropriate
+        static::assertEquals('NEW!', $newStruct->foo);
+        static::assertEquals('bar!', $newStruct->bar);
 
         // Check original struct left unchanged
-        static::assertEquals($castedFoo, $subject->foo);
-        static::assertEquals($castedBar, $subject->bar);
+        static::assertEquals('foo!', $subject->foo);
+        static::assertEquals('bar!', $subject->bar);
     }
 
     /**
      * @since [*next-version*]
-     *
-     * @throws ReflectionException
      */
     public function testDeriveNoChanges()
     {
-        {
-            // Original values given to constructor
-            $ogFoo = uniqid('foo');
-            $ogBar = uniqid('bar');
+        $data = [
+            'foo' => 'foo',
+            'bar' => 'bar',
+        ];
 
-            // Casted versions of values given to constructor
-            $castedFoo = uniqid('casted-foo');
-            $castedBar = uniqid('casted-bar');;
-        }
-        {
-            $fooType = $this->getMockForAbstractClass(PropType::class);
-            $barType = $this->getMockForAbstractClass(PropType::class);
+        $subject = new class($data) extends Struct {
+            static protected $__propTypesCache;
 
-            $fooType->expects(static::once())
-                    ->method('cast')
-                    ->with($ogFoo)
-                    ->willReturn($castedFoo);
+            static protected function propTypes() : array
+            {
+                return [
+                    'foo' => MockPropType::create()->willDo(function ($arg) {
+                        return $arg . '!';
+                    }),
+                    'bar' => MockPropType::create()->willDo(function ($arg) {
+                        return $arg . '!';
+                    }),
+                ];
+            }
+        };
 
-            $barType->expects(static::once())
-                    ->method('cast')
-                    ->with($ogBar)
-                    ->willReturn($castedBar);
+        $newStruct = $subject::derive($subject, []);
 
-            $propTypes = [
-                'foo' => $fooType,
-                'bar' => $barType,
-            ];
-        }
-
-        $subject = $this->createSubject($propTypes, [
-            'foo' => $ogFoo,
-            'bar' => $ogBar,
-        ]);
-
-        $newStruct = Struct::derive($subject, []);
-
-        static::assertInstanceOf(Struct::class, $newStruct);
+        // Check that the new instance is the same as the original
         static::assertSame($newStruct, $subject);
 
-        // Check struct left unchanged
-        static::assertEquals($castedFoo, $subject->foo);
-        static::assertEquals($castedBar, $subject->bar);
+        // Check whether the struct is left unchanged
+        static::assertEquals('foo!', $subject->foo);
+        static::assertEquals('bar!', $subject->bar);
     }
 
     /**
      * @since [*next-version*]
-     *
-     * @throws ReflectionException
      */
     public function testDeriveInvalidProp()
     {
         $this->expectException(LogicException::class);
 
-        {
-            $fooType = $this->getMockForAbstractClass(PropType::class);
-            $barType = $this->getMockForAbstractClass(PropType::class);
+        $subject = new class([]) extends Struct {
+            static protected $__propTypesCache;
 
-            $propTypes = [
-                'foo' => $fooType,
-                'bar' => $barType,
-            ];
-        }
-
-        $subject = $this->createSubject($propTypes, []);
+            static protected function propTypes() : array
+            {
+                return [
+                    'foo' => MockPropType::create(),
+                    'bar' => MockPropType::create(),
+                ];
+            }
+        };
 
         Struct::derive($subject, [
             'invalid' => 'invalid',
@@ -379,226 +333,135 @@ class StructTest extends TestCase
 
     /**
      * @since [*next-version*]
-     *
-     * @throws ReflectionException
      */
-    public function testAreEqual()
+    public function testEquals()
     {
-        {
-            $aType = $this->getMockForAbstractClass(PropType::class);
-            $bType = $this->getMockForAbstractClass(PropType::class);
+        $data = [
+            'a' => 'a',
+            'b' => 'b',
+        ];
 
-            $aType->method('cast')->willReturnArgument(0);
-            $bType->method('cast')->willReturnArgument(0);
+        $struct1 = new class($data) extends Struct {
+            static protected function propTypes() : array
+            {
+                return [
+                    'a' => MockPropType::create(),
+                    'b' => MockPropType::create(),
+                ];
+            }
+        };
 
-            $propTypes = [
-                'a' => $aType,
-                'b' => $bType,
-            ];
-        }
-        {
-            $data = [
-                'a' => uniqid('a'),
-                'b' => uniqid('b'),
-            ];
+        $struct2 = new class($data) extends Struct {
+            static protected function propTypes() : array
+            {
+                return [
+                    'a' => MockPropType::create(),
+                    'b' => MockPropType::create(),
+                ];
+            }
+        };
 
-            $struct1 = $this->createSubject($propTypes, $data);
-            $struct2 = $this->createSubject($propTypes, $data);
-        }
-
-        static::assertTrue(Struct::areEqual($struct1, $struct2));
-        static::assertTrue(Struct::areEqual($struct2, $struct1));
-    }
-
-    /**
-     * @since [*next-version*]
-     *
-     * @throws ReflectionException
-     */
-    public function testAreEqualThreeStructs()
-    {
-        {
-            $aType = $this->getMockForAbstractClass(PropType::class);
-            $bType = $this->getMockForAbstractClass(PropType::class);
-
-            $aType->method('cast')->willReturnArgument(0);
-            $bType->method('cast')->willReturnArgument(0);
-
-            $propTypes = [
-                'a' => $aType,
-                'b' => $bType,
-            ];
-        }
-        {
-            $data = [
-                'a' => uniqid('a'),
-                'b' => uniqid('b'),
-            ];
-
-            $struct1 = $this->createSubject($propTypes, $data);
-            $struct2 = $this->createSubject($propTypes, $data);
-            $struct3 = $this->createSubject($propTypes, $data);
-        }
-
-        static::assertTrue(Struct::areEqual($struct1, $struct2, $struct3));
-        static::assertTrue(Struct::areEqual($struct3, $struct2, $struct1));
-    }
-
-    /**
-     * @since [*next-version*]
-     *
-     * @throws ReflectionException
-     */
-    public function testAreEqualDiffData()
-    {
-        {
-            $aType = $this->getMockForAbstractClass(PropType::class);
-            $bType = $this->getMockForAbstractClass(PropType::class);
-
-            $aType->method('cast')->willReturnArgument(0);
-            $bType->method('cast')->willReturnArgument(0);
-
-            $propTypes = [
-                'a' => $aType,
-                'b' => $bType,
-            ];
-        }
-        {
-            $data1 = [
-                'a' => uniqid('a'),
-                'b' => uniqid('b'),
-            ];
-            $data2 = [
-                'a' => uniqid('a'),
-                'b' => uniqid('b'),
-            ];
-            $struct1 = $this->createSubject($propTypes, $data1);
-            $struct2 = $this->createSubject($propTypes, $data1);
-            $struct3 = $this->createSubject($propTypes, $data2);
-        }
-
-        static::assertFalse(Struct::areEqual($struct1, $struct2, $struct3));
-        static::assertFalse(Struct::areEqual($struct3, $struct2, $struct1));
+        static::assertTrue(Struct::equals($struct1, $struct2));
+        static::assertTrue(Struct::equals($struct2, $struct1));
     }
 
     /**
      * @since [*next-version*]
      */
-    public function testAreEqualDiffPropsSameData()
+    public function testEqualsDiffData()
     {
-        {
-            // Cannot use mocks in this test due to a recursive dependency in the mock class, which causes PHP's
-            // loose equivalence to recurse indefinitely
-            $aType = new StringPropType();
-            $bType1 = new StringPropType();
-            $bType2 = new NullablePropType(new StringPropType());
+        $data1 = [
+            'a' => '1',
+            'b' => '2',
+        ];
 
-            $propTypes1 = [
-                'a' => $aType,
-                'b' => $bType1,
-            ];
+        $data2 = [
+            'a' => '1',
+            'b' => '3',
+        ];
 
-            $propTypes2 = [
-                'a' => $aType,
-                'b' => $bType2,
-            ];
-        }
-        {
-            $data = [
-                'a' => uniqid('a'),
-                'b' => uniqid('b'),
-            ];
+        $struct1 = new class($data1) extends Struct {
+            static protected function propTypes() : array
+            {
+                return [
+                    'a' => MockPropType::create(),
+                    'b' => MockPropType::create(),
+                ];
+            }
+        };
 
-            $struct1 = $this->createSubject($propTypes1, $data);
-            $struct2 = $this->createSubject($propTypes2, $data);
-        }
+        $struct2 = new class($data2) extends Struct {
+            static protected function propTypes() : array
+            {
+                return [
+                    'a' => MockPropType::create(),
+                    'b' => MockPropType::create(),
+                ];
+            }
+        };
 
-        static::assertFalse(Struct::areEqual($struct1, $struct2));
-        static::assertFalse(Struct::areEqual($struct2, $struct1));
-    }
-
-    /**
-     * @since [*next-version*]
-     *
-     * @throws ReflectionException
-     */
-    public function testAreEqualOnlyOneArg()
-    {
-        $this->expectException(BadMethodCallException::class);
-
-        {
-            $aType = $this->getMockForAbstractClass(PropType::class);
-            $bType = $this->getMockForAbstractClass(PropType::class);
-
-            $aType->method('cast')->willReturnArgument(0);
-            $bType->method('cast')->willReturnArgument(0);
-
-            $propTypes = [
-                'a' => $aType,
-                'b' => $bType,
-            ];
-        }
-        {
-            $data = [
-                'a' => uniqid('a'),
-                'b' => uniqid('b'),
-            ];
-
-            $struct = $this->createSubject($propTypes, $data);
-        }
-
-        Struct::areEqual($struct);
+        static::assertFalse(Struct::equals($struct1, $struct2));
+        static::assertFalse(Struct::equals($struct2, $struct1));
     }
 
     /**
      * @since [*next-version*]
      */
-    public function testAreEqualNoArgs()
+    public function testEqualsDiffPropsSameData()
     {
-        $this->expectException(BadMethodCallException::class);
+        $data = [
+            'a' => 'a',
+            'b' => 'b',
+        ];
 
-        Struct::areEqual();
+        $struct1 = new class($data) extends Struct {
+            static protected function propTypes() : array
+            {
+                return [
+                    'a' => MockPropType::create()->willReturn('A'),
+                    'b' => MockPropType::create()->willReturn('B'),
+                ];
+            }
+        };
+
+        $struct2 = new class($data) extends Struct {
+            static protected function propTypes() : array
+            {
+                return [
+                    'a' => MockPropType::create()->willReturn('A'),
+                    'b' => MockPropType::create()->willReturn('2'),
+                ];
+            }
+        };
+
+        static::assertFalse(Struct::equals($struct1, $struct2));
+        static::assertFalse(Struct::equals($struct2, $struct1));
     }
 
     /**
      * @since [*next-version*]
-     *
-     * @throws ReflectionException
      */
     public function testToArray()
     {
-        {
-            $foo = uniqid('foo');
-            $bar = uniqid('bar');
-
-            $castedFoo = uniqid('casted-foo');
-            $castedBar = uniqid('casted-bar');
-        }
-        {
-            $fooPropTy = $this->getMockForAbstractClass(PropType::class);
-            $barPropTy = $this->getMockForAbstractClass(PropType::class);
-
-            $fooPropTy->method('cast')->willReturn($castedFoo);
-            $barPropTy->method('cast')->willReturn($castedBar);
-
-            $propTypes = [
-                'foo' => $fooPropTy,
-                'bar' => $barPropTy,
-            ];
-        }
-        {
-            $data = [
-                'foo' => $foo,
-                'bar' => $bar,
-            ];
-        }
-
-        $subject = $this->createSubject($propTypes, $data);
+        $data = [
+            'foo' => '123',
+            'bar' => '456',
+        ];
 
         $expected = [
-            'foo' => $castedFoo,
-            'bar' => $castedBar,
+            'foo' => 'abc',
+            'bar' => 'def',
         ];
+
+        $subject = new class($data) extends Struct {
+            static protected function propTypes() : array
+            {
+                return [
+                    'foo' => MockPropType::create()->expects('123')->willReturn('abc'),
+                    'bar' => MockPropType::create()->expects('456')->willReturn('def'),
+                ];
+            }
+        };
 
         self::assertEquals($expected, Struct::toArray($subject));
         self::assertEquals($expected, $subject->__debugInfo());
@@ -606,42 +469,27 @@ class StructTest extends TestCase
 
     /**
      * @since [*next-version*]
-     *
-     * @throws ReflectionException
      */
     public function testSerialize()
     {
-        {
-            $foo = uniqid('foo');
-            $bar = uniqid('bar');
+        $data = [
+            'foo' => '123',
+            'bar' => '456',
+        ];
 
-            $castedFoo = uniqid('casted-foo');
-            $castedBar = uniqid('casted-bar');
-        }
-        {
-            $fooPropTy = $this->getMockForAbstractClass(PropType::class);
-            $barPropTy = $this->getMockForAbstractClass(PropType::class);
-
-            $fooPropTy->method('cast')->willReturn($castedFoo);
-            $barPropTy->method('cast')->willReturn($castedBar);
-
-            $propTypes = [
-                'foo' => $fooPropTy,
-                'bar' => $barPropTy,
-            ];
-        }
-        {
-            $data = [
-                'foo' => $foo,
-                'bar' => $bar,
-            ];
-        }
-
-        $subject = $this->createSubject($propTypes, $data);
+        $subject = new class($data) extends Struct {
+            static protected function propTypes() : array
+            {
+                return [
+                    'foo' => MockPropType::create()->expects('123')->willReturn('abc'),
+                    'bar' => MockPropType::create()->expects('456')->willReturn('def'),
+                ];
+            }
+        };
 
         $expected = serialize([
-            'foo' => $castedFoo,
-            'bar' => $castedBar,
+            'foo' => 'abc',
+            'bar' => 'def',
         ]);
 
         self::assertEquals($expected, $subject->serialize());
@@ -649,35 +497,27 @@ class StructTest extends TestCase
 
     /**
      * @since [*next-version*]
-     *
-     * @throws ReflectionException
      */
     public function testUnserialize()
     {
-        {
-            $foo = uniqid('foo');
-            $bar = uniqid('bar');
-        }
-        {
-            $fooPropTy = $this->getMockForAbstractClass(PropType::class);
-            $barPropTy = $this->getMockForAbstractClass(PropType::class);
+        $subject = new class([]) extends Struct {
+            static protected function propTypes() : array
+            {
+                return [
+                    'foo' => MockPropType::create(),
+                    'bar' => MockPropType::create(),
+                ];
+            }
+        };
 
-            $propTypes = [
-                'foo' => $fooPropTy,
-                'bar' => $barPropTy,
-            ];
-        }
-        {
-            $serialized = serialize([
-                'foo' => $foo,
-                'bar' => $bar,
-            ]);
-        }
+        $serialized = serialize([
+            'foo' => '123',
+            'bar' => '456',
+        ]);
 
-        $subject = $this->createSubject($propTypes, []);
         $subject->unserialize($serialized);
 
-        self::assertEquals($foo, $subject->foo);
-        self::assertEquals($bar, $subject->bar);
+        self::assertEquals('123', $subject->foo);
+        self::assertEquals('456', $subject->bar);
     }
 }
