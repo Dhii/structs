@@ -144,6 +144,7 @@ covariant. And remember, removing or renaming properties breaks [LSP][lsp].
 | `Ty::arrayLike()` | Array values and [`ArrayAccess`][array-access] objects |
 | `Ty::iterable()` | [Iterable values][iterables] |
 | `Ty::object(...)` | Object values, with an optional parent class restrictions |
+| `Ty::struct(?)` | Structs of a specific class, or an array from which such a struct can be made. |
 | `Ty::callable()` | [Callable values][callables] |
 | `Ty::enum(...)` | Values that exist within a pre-defined set |
 | `Ty::union(...)` | Values that match **at least one** type in a given set |
@@ -172,6 +173,9 @@ class MyStruct extends Struct
 
             // An object that implements Traversable AND Serializable
             'list' => Ty::object(Traversable::class, Serializable::class),
+
+            // An Image struct, or an array with the correct props
+            'image' => Ty::struct(Image::class),
 
             // A custom type
             'total' => Ty::custom(function ($value) {
