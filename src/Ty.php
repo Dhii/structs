@@ -16,6 +16,7 @@ use Dhii\Structs\PropTypes\MixedPropType;
 use Dhii\Structs\PropTypes\NullablePropType;
 use Dhii\Structs\PropTypes\ObjectPropType;
 use Dhii\Structs\PropTypes\StringPropType;
+use Dhii\Structs\PropTypes\StructPropType;
 use Dhii\Structs\PropTypes\UnionPropType;
 use TypeError;
 
@@ -202,6 +203,26 @@ class Ty
             : null;
 
         return new ObjectPropType($parent);
+    }
+
+    /**
+     * Struct property type.
+     *
+     * @since [*next-version*]
+     *
+     * @param string $class The name of the struct class.
+     *
+     * @return StructPropType
+     */
+    public static function struct(string $class) : StructPropType
+    {
+        static $cache = [];
+
+        if (!array_key_exists($class, $cache)) {
+            $cache[$class] = new StructPropType($class);
+        }
+
+        return $cache[$class];
     }
 
     /**

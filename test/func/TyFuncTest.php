@@ -19,7 +19,9 @@ use Dhii\Structs\PropTypes\MixedPropType;
 use Dhii\Structs\PropTypes\NullablePropType;
 use Dhii\Structs\PropTypes\ObjectPropType;
 use Dhii\Structs\PropTypes\StringPropType;
+use Dhii\Structs\PropTypes\StructPropType;
 use Dhii\Structs\PropTypes\UnionPropType;
+use Dhii\Structs\Struct;
 use Dhii\Structs\Ty;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -141,6 +143,64 @@ class TyFuncTest extends TestCase
         $subject = Ty::object(ArrayAccess::class, Countable::class, Traversable::class);
 
         static::assertInstanceOf(IntersectionPropType::class, $subject);
+    }
+
+    /**
+     * @since [*next-version*]
+     */
+    public function testStruct()
+    {
+        $class = get_class(new class extends Struct {
+            static protected function propTypes() : array
+            {
+                return [];
+            }
+        });
+
+        static::assertInstanceOf(StructPropType::class, Ty::struct($class));
+    }
+
+    /**
+     * @since [*next-version*]
+     */
+    public function testStructCache()
+    {
+        $class = get_class(new class extends Struct {
+            static protected function propTypes() : array
+            {
+                return [];
+            }
+        });
+
+        $propTy1 = Ty::struct($class);
+        $propTy2 = Ty::struct($class);
+
+        static::assertSame($propTy1, $propTy2);
+    }
+
+    /**
+     * @since [*next-version*]
+     */
+    public function testStructCacheDiffClass()
+    {
+        $class1 = get_class(new class extends Struct {
+            static protected function propTypes() : array
+            {
+                return [];
+            }
+        });
+
+        $class2 = get_class(new class extends Struct {
+            static protected function propTypes() : array
+            {
+                return [];
+            }
+        });
+
+        $propTy1 = Ty::struct($class1);
+        $propTy2 = Ty::struct($class2);
+
+        static::assertNotSame($propTy1, $propTy2);
     }
 
     /**

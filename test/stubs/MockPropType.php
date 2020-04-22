@@ -4,6 +4,7 @@ namespace Dhii\Structs\Tests\Stubs;
 
 use Dhii\Structs\PropType;
 use PHPUnit\Framework\Constraint\IsEqual;
+use TypeError;
 
 /**
  * A mock prop type.
@@ -14,10 +15,11 @@ class MockPropType implements PropType
 {
     /**
      * The value the mock will return when casting, if {@link isNoop} is false and {@link function} is null.
+     * If an instance of {@link TypeError}, it will be thrown when casting.
      *
-     * @var mixed|null
+     * @var mixed|TypeError|null
      */
-    protected $return = null;
+    protected $cast = null;
 
     /**
      * The function to run when casting, if {@link $isNoop} is false.
@@ -46,6 +48,13 @@ class MockPropType implements PropType
      * @var mixed|null
      */
     protected $default = null;
+
+    /**
+     * The validity to return from {@link isValid}, or null.
+     *
+     * @var boolean|null
+     */
+    protected $validity = null;
 
     /**
      * Static constructor, for easily creating instances.
@@ -81,14 +90,10 @@ class MockPropType implements PropType
      * @inheritDoc
      *
      * @since [*next-version*]
-     *
      */
     public function cast($value)
     {
-        if ($this->arg !== null && $this->arg !== $value) {
-            $constraint = new IsEqual($this->arg);
-            $constraint->evaluate($value, 'Argument does not match expected value');
-        }
+        $this->checkArg($value);
 
         if ($this->isNoop) {
             return $value;
@@ -98,7 +103,11 @@ class MockPropType implements PropType
             return ($this->function)($value);
         }
 
-        return $this->return;
+        if ($this->cast instanceof TypeError) {
+            throw $this->cast;
+        }
+
+        return $this->cast;
     }
 
     /**
@@ -110,7 +119,24 @@ class MockPropType implements PropType
      */
     public function isValid($value) : bool
     {
-        return true;
+        $this->checkArg($value);
+
+        return $this->validity;
+    }
+
+    /**
+     * Checks an argument against the expectation constraint, if it's set.
+     *
+     * @since [*next-version*]
+     *
+     * @param mixed $arg The argument to check.
+     */
+    protected function checkArg($arg)
+    {
+        if ($this->arg !== null && $this->arg !== $arg) {
+            $constraint = new IsEqual($this->arg);
+            $constraint->evaluate($arg, 'Argument does not match expected value');
+        }
     }
 
     /**
@@ -132,7 +158,7 @@ class MockPropType implements PropType
      *
      * @since [*next-version*]
      *
-     * @param mixed $value The value to return.
+     * @param mixed|TypeError $value The value to return, or a {@link TypeError} to fail casting.
      *
      * @return $this
      */
@@ -140,7 +166,23 @@ class MockPropType implements PropType
     {
         $this->isNoop = false;
         $this->function = null;
-        $this->return = $value;
+        $this->cast = $value;
+
+        return $this;
+    }
+
+    /**
+     * Shortcut for calling {@link willReturn()} with a {@link TypeError} instance.
+     *
+     * @since [*next-version*]
+     *
+     * @return $this
+     */
+    public function willThrow()
+    {
+        $this->isNoop = false;
+        $this->function = null;
+        $this->cast = new TypeError();
 
         return $this;
     }
@@ -157,7 +199,7 @@ class MockPropType implements PropType
     public function willDo(callable $function)
     {
         $this->isNoop = false;
-        $this->return = null;
+        $this->cast = null;
         $this->function = $function;
 
         return $this;
@@ -191,6 +233,22 @@ class MockPropType implements PropType
     public function defaultsTo($default)
     {
         $this->default = $default;
+
+        return $this;
+    }
+
+    /**
+     * Sets the mock's validity return value for {@link isValid()}.
+     *
+     * @since [*next-version*]
+     *
+     * @param bool $validity The validity to return.
+     *
+     * @return $this
+     */
+    public function validatesTo(bool $validity)
+    {
+        $this->validity = $validity;
 
         return $this;
     }
