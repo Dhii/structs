@@ -240,13 +240,15 @@ abstract class Struct implements Serializable
      */
     public static function getPropTypes()
     {
-        static $cache = null;
+        static $cache = [];
 
-        if ($cache === null) {
-            $cache = static::propTypes();
+        $class = get_called_class();
+
+        if (!isset($cache[$class])) {
+            $cache[$class] = static::propTypes();
         }
 
-        return $cache;
+        return $cache[$class];
     }
 
     /**

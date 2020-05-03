@@ -3,7 +3,9 @@
 namespace Dhii\Structs\Tests\Unit;
 
 use Dhii\Structs\Struct;
+use Dhii\Structs\Tests\Stubs\ExtendedStructStub;
 use Dhii\Structs\Tests\Stubs\MockPropType;
+use Dhii\Structs\Tests\Stubs\StructStub;
 use LogicException;
 use PHPUnit\Framework\TestCase;
 
@@ -151,6 +153,34 @@ class StructTest extends TestCase
 
         // Assert only called once
         static::assertEquals(1, $subject::$numCalled);
+    }
+
+    /**
+     * @since [*next-version*]
+     */
+    public function testGetPropTypesInheritance()
+    {
+        $base = new StructStub([
+            'foo' => 1,
+            'bar' => 2,
+        ]);
+
+        $extended = new class(['foo' => 3, 'bar' => 4, 'baz' => 5]) extends StructStub {
+            protected static function propTypes() : array
+            {
+                $props = parent::propTypes();
+                $props['baz'] = MockPropType::create()->willReturnArg();
+
+                return $props;
+            }
+        };
+
+        // Assert correct props
+        static::assertEquals(1, $base->foo);
+        static::assertEquals(2, $base->bar);
+        static::assertEquals(3, $extended->foo);
+        static::assertEquals(4, $extended->bar);
+        static::assertEquals(5, $extended->baz);
     }
 
     /**
